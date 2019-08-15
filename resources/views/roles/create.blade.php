@@ -32,7 +32,7 @@
 		</div>
 
 		<div class="row">
-			<div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 col-10 offset-xl-1 offset-md-1 offset-lg-1 offset-sm-1">
+			<div class="col-xl-8 col-lg-8 col-md-8 col-sm-8 col-8 offset-xl-2 offset-md-2 offset-lg-2 offset-sm-2">
 			<div class="card">
 				<h5 class="card-header">Add Role</h5>
 				<div class="card-body">

@@ -9,7 +9,7 @@
 	<!-- Bootstrap CSS -->
 	
 	@yield('css')
-
+	
 	<title>@yield('title', 'Concept - Bootstrap 4 Admin Dashboard Template')</title>
 </head>
 
