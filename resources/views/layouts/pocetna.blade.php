@@ -33,27 +33,14 @@
 				@endguest
 				<li class="nav-item active">
 					@auth
-						<a class="nav-link" href="{{ route('logout') }}">Logout <span class="sr-only">(current)</span></a>
+						<a class="nav-link d-inline-block" href="{{ route('logout') }}">Logout <span class="sr-only">(current)</span></a>
+						@if(auth()->user()->role->id === 1)
+							<a class="nav-link d-inline-block" href="{{ route('admin.index') }}">Admin <span class="sr-only">(current)</span></a>
+						@endif
 					@else
 						<a class="nav-link" href="{{ route('login') }}">Login <span class="sr-only">(current)</span></a>
 					@endauth
 				</li>
-				<li class="nav-item dropdown">
-					@auth
-		       	@if(auth()->user()->role->id === 1)
-			        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-			          Pages
-			        </a>
-			        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-			          <a class="dropdown-item" href="{{ route('admin.index') }}">Admin</a>
-			          <div class="dropdown-divider"></div>
-			          <a class="dropdown-item" href="{{ route('users.index') }}">Users</a>
-			          <a class="dropdown-item" href="{{ route('users.create') }}">Add User</a>
-			          <a class="dropdown-item" href="{{ route('roles.index') }}">Roles</a>
-			        </div>
-		        @endif
-	        @endauth
-	      </li>
 			</ul>
 		</div>
 		</div>

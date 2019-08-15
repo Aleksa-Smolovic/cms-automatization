@@ -37,16 +37,24 @@
 		<!-- basic table  -->
 		<!-- ============================================================== -->
 		<div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 col-10 offset-xl-1 offset-lg-1 offset-md-1 offset-sm-1">
+			
+			@include('partials.error2')
+			@include('partials.success')
+
 			<div class="card">
 				<h5 class="card-header">Roles Table</h5>
 				<div class="card-body">
 					<div class="table-responsive">
+						<a class="btn btn-sm btn-info float-right ml-3" href="{{ route('roles.create') }}">
+							Add New Role
+						</a>
 						<table class="table table-striped table-bordered first">
 							<thead>
 								<tr>
 									<th class="text-center">ID</th>
 									<th class="text-center">Role</th>
 									<th class="text-center">Users</th>
+									<th class="text-center">Delete</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -56,6 +64,14 @@
 										<td class="text-center">{{ $role->name }}</td>
 										<td class="text-center">
 											{!! $role->users->implode('username', '<span class="text-danger"> | </span>') !!}
+										</td>
+										<td class="text-center">
+											<form action="{{ route('roles.destroy', $role->id) }}" method="POST">
+												@method('DELETE')
+												@csrf
+
+												<button class="btn btn-danger btn-sm" type="submit">Delete</button>
+											</form>
 										</td>
 									</tr>
 								@endforeach

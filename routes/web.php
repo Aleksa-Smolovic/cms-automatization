@@ -20,6 +20,9 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 
 	// Roles
 	Route::get('/roles', 'RolesController@index')->name('roles.index');
+	Route::get('/roles/create', 'RolesController@create')->name('roles.create');
+	Route::post('/roles', 'RolesController@store')->name('roles.store');
+	Route::delete('/roles/{role}', 'RolesController@destroy')->name('roles.destroy');
 
 	// Admin
 	Route::get('/admin', 'AdminController@index')->name('admin.index');

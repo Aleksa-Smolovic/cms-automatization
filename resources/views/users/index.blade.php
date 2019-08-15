@@ -44,6 +44,9 @@
 				<h5 class="card-header">Users Table</h5>
 				<div class="card-body">
 					<div class="table-responsive">
+						<a class="btn btn-sm btn-info float-right ml-3" href="{{ route('users.create') }}">
+							Add New User
+						</a>
 						<table class="table table-striped table-bordered first">
 							<thead>
 								<tr>
@@ -71,13 +74,13 @@
 											</span>
 										</td>
 										<td class="text-center">
-											<a class="btn btn-info" href="{{ route('users.edit', $user->id) }}">Edit</a>
+											<a class="btn btn-sm btn-info" href="{{ route('users.edit', $user->id) }}">Edit</a>
 										</td>
 										<td class="text-center">
 											<form action="{{ route('users.destroy', $user->id) }}" method="POST">
 												@method('DELETE')
 												@csrf
-												<button class="btn btn-danger" type="submit">Delete</button>
+												<button class="btn btn-sm btn-danger" type="submit">Delete</button>
 											</form>
 										</td>
 									</tr>

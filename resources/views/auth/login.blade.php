@@ -26,9 +26,10 @@
 <div class="splash-container">
 	<div class="card">
 		<div class="card-header text-center">
-			<a href="{{ route('pocetna') }}">
-				<img class="logo-img" src="{{ asset('assets/images/logo.png') }}" alt="logo">
-			</a>
+			{{-- <a href="{{ route('pocetna') }}"> --}}
+				{{-- <img class="logo-img" src="{{ asset('assets/images/logo.png') }}" alt="logo"> --}}
+			<h1>Login</h1>
+			{{-- </a> --}}
 			<span class="splash-description">Please enter your user information.</span>
 		</div>
 		<div class="card-body">
@@ -56,38 +57,22 @@
 				</div>
 
 				<div class="form-group">
-					<div class="col-md-6 offset-md-4">
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-
-							<label class="form-check-label" for="remember">
-								{{ __('Remember Me') }}
-							</label>
-						</div>
-					</div>
-				</div>
-
-				<div class="form-group">
-					<input class="form-control form-control-lg" id="username" type="text" placeholder="Username" autocomplete="off">
-				</div>
-				<div class="form-group">
-					<input class="form-control form-control-lg" id="password" type="password" placeholder="Password">
-				</div>
-				<div class="form-group">
 					<label class="custom-control custom-checkbox">
-						<input class="custom-control-input" type="checkbox"><span class="custom-control-label">Remember Me</span>
+						<input class="custom-control-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+							<span class="custom-control-label">{{ __('Remember Me') }}</span>
 					</label>
 				</div>
+				
 				<button type="submit" class="btn btn-primary btn-lg btn-block">Sign in</button>
 			</form>
 		</div>
-		<div class="card-footer bg-white p-0">
+		<div class="card-footer bg-white p-0 text-center">
 			<div class="card-footer-item card-footer-item-bordered">
 				<a href="#" class="footer-link">Create An Account</a>
 			</div>
-			<div class="card-footer-item card-footer-item-bordered">
+{{-- 			<div class="card-footer-item card-footer-item-bordered">
 				<a href="#" class="footer-link">Forgot Password</a>
-			</div>
+			</div> --}}
 		</div>
 	</div>
 </div>

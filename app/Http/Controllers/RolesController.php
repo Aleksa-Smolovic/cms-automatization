@@ -12,11 +12,15 @@ class RolesController extends Controller
 	}
 
 	public function create() {
-		
+		return view('roles.create');
 	}
 
-	public function store() {
-		
+	public function store(Request $request) {
+		$data = $request->validate([
+			'name' => 'required|min:2|unique:roles'
+		]);
+		Role::create($data);
+		return redirect(route('roles.index'))->with('success', 'Role deleted successfully.');
 	}
 
 	public function edit() {
@@ -31,7 +35,11 @@ class RolesController extends Controller
 		
 	}
 
-	public function destroy() {
-		
+	public function destroy(Role $role) {
+		if($role->users->count() > 0) {
+			return back()->with('error', 'Aborted, this role has users.');
+		}
+		$role->delete();
+		return redirect(route('roles.index'))->with('success', 'Role deleted successfully.');
 	}
 }

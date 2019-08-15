@@ -29,7 +29,7 @@
 			</div>
 		</div>
 	</div>
-	
+
 	<div class="row">
 		<div class="col-xl-8 col-lg-8 col-md-8 col-sm-8 col-8 offset-xl-2 offset-md-2 offset-lg-2 offset-sm-2">
 		<div class="card">
@@ -101,7 +101,7 @@
 					</div>
 					
 					<div class="form-group">
-						<button class="btn btn-primary" type="submit">Edit User</button>
+						<button class="btn btn-primary" type="submit">Update User</button>
 					</div>
 				</form>
 			</div>

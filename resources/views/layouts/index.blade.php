@@ -145,27 +145,51 @@
 					<div class="collapse navbar-collapse" id="navbarNav">
 						<ul class="navbar-nav flex-column">
 							<li class="nav-divider">
-								Start
+								Admin
 							</li>
-							<li class="nav-item">
-								<a class="nav-link {{-- active --}}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-0" aria-controls="submenu-0"><i class="fa fa-fw fa-user-circle"></i>Admin <span class="badge badge-success">6</span></a>
+							<ul class="nav flex-column">
+								<li class="nav-item">
+									<a class="nav-link" href="{{ route('admin.index') }}">
+										<i class="fab fa-fw fa-wpforms"></i>Most Used Elements
+									</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="{{ route('users.index') }}">
+										<i class="fa fa-fw fa-user-circle"></i>Users
+									</a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link" href="{{ route('roles.index') }}">
+										<i class="fa fa-fw fa-user-circle"></i>Roles
+									</a>
+								</li>
+							</ul>
+							<!-- <li class="nav-item">
+								<a class="nav-link {{-- active --}}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-0" aria-controls="submenu-0"><i class="fa fa-fw fa-user-circle"></i>Users <span class="badge badge-success">6</span></a>
 								<div id="submenu-0" class="collapse submenu" style="">
 									<ul class="nav flex-column">
-										<li class="nav-item">
-											<a class="nav-link" href="{{ route('admin.index') }}">Most Used Elements</a>
-										</li>
 										<li class="nav-item">
 											<a class="nav-link" href="{{ route('users.index') }}">All Users</a>
 										</li>
 										<li class="nav-item">
 											<a class="nav-link" href="{{ route('users.create') }}">Add User</a>
 										</li>
-										<li class="nav-item">
-											<a class="nav-link" href="{{ route('roles.index') }}">Roles</a>
-										</li>
 									</ul>
 								</div>
 							</li>
+							<li class="nav-item">
+								<a class="nav-link {{-- active --}}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-11" aria-controls="submenu-11"><i class="fa fa-fw fa-user-circle"></i>Roles <span class="badge badge-success">6</span></a>
+								<div id="submenu-11" class="collapse submenu" style="">
+									<ul class="nav flex-column">
+										<li class="nav-item">
+											<a class="nav-link" href="{{ route('roles.index') }}">All Roles</a>
+										</li>
+										<li class="nav-item">
+											<a class="nav-link" href="{{ route('roles.create') }}">Add Role</a>
+										</li>
+									</ul>
+								</div>
+							</li> -->
 							<li class="nav-divider">
 								Menu
 							</li>
