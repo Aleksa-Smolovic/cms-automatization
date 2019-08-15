@@ -20,7 +20,7 @@ class RolesController extends Controller
 			'name' => 'required|min:2|unique:roles'
 		]);
 		Role::create($data);
-		return redirect(route('roles.index'))->with('success', 'Role deleted successfully.');
+		return redirect(route('roles.index'))->with('success', 'Role created successfully.');
 	}
 
 	public function edit() {
