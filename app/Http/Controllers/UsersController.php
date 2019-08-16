@@ -21,12 +21,12 @@ class UsersController extends Controller
 
 	public function store(Request $request) {
 		$data = request()->validate([
-			'role_id'    => ['required'],
-			'first_name' => ['required', 'min:2'],
-			'last_name'  => ['required', 'min:2'],
-			'username'   => ['required', 'min:2'],
-			'email'      => ['required', 'email'],
-			'password'   => ['required', 'min:6' ,'confirmed'],
+			'role_id'    => 'required',
+			'first_name' => 'required|min:2',
+			'last_name'  => 'required|min:2',
+			'username'   => 'required|min:2',
+			'email'      => 'required|email|unique:users',
+			'password'   => 'required|min:6|confirmed'
 		]);
 		$data['password'] = Hash::make($data['password'], ['rounds' => 12]);
 
@@ -50,11 +50,11 @@ class UsersController extends Controller
 
 	public function update(Request $request, User $user) {
 		$data = $request->validate([
-			'role_id'    => ['required'],
-			'first_name' => ['required', 'min:2'],
-			'last_name'  => ['required', 'min:2'],
-			'username'   => ['required', 'min:2'],
-			'email'      => ['required', 'email']
+			'role_id'    => 'required',
+			'first_name' => 'required|min:2',
+			'last_name'  => 'required|min:2',
+			'username'   => 'required|min:2',
+			'email'      => 'required|email|unique:users'
 		]);
 
 		if(!empty($request['password'])) {
