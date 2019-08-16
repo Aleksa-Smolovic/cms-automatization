@@ -55,6 +55,7 @@
 										<th class="text-center">ID</th>
 										<th class="text-center">Role</th>
 										<th class="text-center">Users</th>
+										<th class="text-center">Edit</th>
 										<th class="text-center">Delete</th>
 									</tr>
 								</thead>
@@ -72,6 +73,9 @@
 												@endforeach
 												{{-- {!! $role->users->implode('username', '<span class="text-danger"> | </span>') !!} --}}
 											</td>
+											<td>
+												<a class="btn btn-sm btn-info" href="{{ route('roles.edit', $role->id) }}">Edit</a>
+											</td>
 											<td class="text-center">
 												<form action="{{ route('roles.destroy', $role->id) }}" method="POST">
 													@method('DELETE')
@@ -85,6 +89,7 @@
 								</tbody>
 							</table>
 						</div>
+						<a class="btn btn-sm btn-warning" href="{{ route('roles.deleted') }}">Deleted Roles</a href="{{ route('roles.deleted') }}">
 					</div>
 				</div>
 			</div>

@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 class RolesController extends Controller
 {
 	public function index() {
-		return view('roles.index')->with('roles', Role::all());
+		return view('roles.index')->with('roles', Role::orderBy('id', 'ASC')->get());
 	}
 
 	public function create() {
@@ -23,12 +23,16 @@ class RolesController extends Controller
 		return redirect(route('roles.index'))->with('success', 'Role created successfully.');
 	}
 
-	public function edit() {
-		
+	public function edit(Role $role) {
+		return view('roles.edit', compact('role'));
 	}
 
-	public function update() {
-		
+	public function update(Request $request, Role $role) {
+		$data = $request->validate([
+			'name' => 'required|min:2|unique:roles'
+		]);
+		$role->update($data);
+		return redirect(route('roles.index'))->with('success', 'Role updated successfully.');
 	}
 
 	public function show() {
@@ -41,5 +45,14 @@ class RolesController extends Controller
 		}
 		$role->delete();
 		return redirect(route('roles.index'))->with('success', 'Role deleted successfully.');
+	}
+
+	public function deleted() {
+		return view('roles.deleted')->withRoles(Role::onlyTrashed()->get());
+	}
+
+	public function restore($id) {
+		Role::where('id', $id)->restore();
+		return back()->with('succes', 'Role restored successfully');
 	}
 }

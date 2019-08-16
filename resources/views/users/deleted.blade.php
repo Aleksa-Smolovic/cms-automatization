@@ -45,59 +45,54 @@
 					<h5 class="card-header">Users Table</h5>
 					<div class="card-body">
 						<div class="table-responsive">
-							<a class="btn btn-sm btn-info float-right ml-3" href="{{ route('users.create') }}">
-								Add New User
-							</a>
-							<table class="table table-striped table-bordered first">
-								<thead>
-									<tr>
-										<th class="text-center">ID</th>
-										<th class="text-center">First Name</th>
-										<th class="text-center">Last Name</th>
-										<th class="text-center">Username</th>
-										<th class="text-center">Email</th>
-										<th class="text-center">Role</th>
-										<th class="text-center">Edit</th>
-										<th class="text-center">Delete</th>
-									</tr>
-								</thead>
-								<tbody>
-									@foreach($users as $user)
+							@if($users->count() > 0)
+								<table class="table table-striped table-bordered first">
+									<thead>
 										<tr>
-											<td class="text-center">{{ $user->id }}</td>
-											<td class="text-center">{{ $user->first_name }}</td>
-											<td class="text-center">{{ $user->last_name }}</td>
-											<td class="text-center">{{ $user->username }}</td>
-											<td class="text-center">{{ $user->email }}</td>
-											<td class="text-center">
-												<span class="badge badge-pill
-													@if($user->role->id == 1)
-														{{ 'badge-success' }}
-													@elseif($user->role->id == 2)
-														{{ 'badge-warning' }}
-													@else
-														{{ 'badge-info' }}
-													@endif
-												">
-													{{ $user->role->name }}
-												</span>
-											</td>
-											<td class="text-center">
-												<a class="btn btn-sm btn-info" href="{{ route('users.edit', $user->id) }}">Edit</a>
-											</td>
-											<td class="text-center">
-												<form action="{{ route('users.destroy', $user->id) }}" method="POST">
-													@method('DELETE')
-													@csrf
-													<button class="btn btn-sm btn-danger" type="submit">Delete</button>
-												</form>
-											</td>
+											<th class="text-center">ID</th>
+											<th class="text-center">First Name</th>
+											<th class="text-center">Last Name</th>
+											<th class="text-center">Username</th>
+											<th class="text-center">Email</th>
+											<th class="text-center">Role</th>
+											<th class="text-center">Restore</th>
 										</tr>
-									@endforeach
-								</tbody>
-							</table>
+									</thead>
+									<tbody>
+										@foreach($users as $user)
+											<tr>
+												<td class="text-center">{{ $user->id }}</td>
+												<td class="text-center">{{ $user->first_name }}</td>
+												<td class="text-center">{{ $user->last_name }}</td>
+												<td class="text-center">{{ $user->username }}</td>
+												<td class="text-center">{{ $user->email }}</td>
+												<td class="text-center">
+													<span class="badge badge-pill
+														@if($user->role->id == 1)
+															{{ 'badge-success' }}
+														@elseif($user->role->id == 2)
+															{{ 'badge-warning' }}
+														@else
+															{{ 'badge-info' }}
+														@endif
+													">
+														{{ $user->role->name }}
+													</span>
+												</td>
+												<td class="text-center">
+													<form action="{{ route('users.restore', $user->id) }}" method="POST">
+														@csrf
+														<button class="btn btn-sm btn-info" type="submit">Restore</button>
+													</form>
+												</td>
+											</tr>
+										@endforeach
+									</tbody>
+								</table>
+							@else
+								<h2>There are no deleted Users, <a class="text-primary" href="{{ route('users.index') }}">Go back.</a></h2>
+							@endif
 						</div>
-						<a class="btn btn-sm btn-warning" href="{{ route('users.deleted') }}">Deleted Users</a href="{{ route('users.deleted') }}">
 					</div>
 				</div>
 			</div>

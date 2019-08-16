@@ -1,26 +1,27 @@
 <?php
 
-Route::get('/', function () {
-	return view('welcome');
-})->name('pocetna');
+Route::view('/', 'welcome')->name('pocetna');
 
 Auth::routes();
 Route::get('logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
-Route::get('/home', 'HomeController@index')->name('home');
-
 Route::group(['middleware' => ['auth', 'admin']], function () {
 	// Users
+	Route::post('/users/{role}/restore', 'UsersController@restore')->name('users.restore');
+	Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');
-	
+
 	// Roles
-	Route::get('/roles', 'RolesController@index')->name('roles.index');
-	Route::get('/roles/create', 'RolesController@create')->name('roles.create');
-	Route::post('/roles', 'RolesController@store')->name('roles.store');
-	Route::delete('/roles/{role}', 'RolesController@destroy')->name('roles.destroy');
+	Route::post('/roles/{role}/restore', 'RolesController@restore')->name('roles.restore');
+	Route::get('/roles/deleted', 'RolesController@deleted')->name('roles.deleted');
+	Route::resource('roles', 'RolesController');
 
 	// Admin
 	Route::get('/admin', 'AdminController@index')->name('admin.index');
+
+	  /////////////////////////////
+	 // Concept Template Routes //
+	/////////////////////////////
 
 	// Dashboard
 	Route::get('/dashboard', 'DashboardController@index')->name('dashboard.index');
