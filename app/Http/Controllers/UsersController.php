@@ -40,7 +40,7 @@ class UsersController extends Controller
 		$user->password   = $data['password'];
 		$user->save();
 
-		return redirect(route('users.index'))->with('success', 'Uspješno Dodat Korisnik.');
+		return redirect(route('users.index'))->with('success', 'User added successfully.');
 	}
 
 	public function edit(User $user) {
@@ -70,7 +70,7 @@ class UsersController extends Controller
 		$user->role()->associate($role);
 		$user->save();
 
-		return redirect(route('users.index'))->with('success', 'Uspješno Izmijenjen Korisnik.');
+		return redirect(route('users.index'))->with('success', 'User updated successfully.');
 	}
 
 	public function show() {
@@ -79,6 +79,6 @@ class UsersController extends Controller
 
 	public function destroy(User $user) {
 		$user->delete();
-		return redirect(route('users.index'))->with('success', 'Uspješno Izbrisan Korisnik.');
+		return redirect(route('users.index'))->with('success', 'User deleted successfully.');
 	}
 }

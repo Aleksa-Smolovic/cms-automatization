@@ -64,7 +64,13 @@
 											<td class="text-center">{{ $role->id }}</td>
 											<td class="text-center">{{ $role->name }}</td>
 											<td class="text-center">
-												{!! $role->users->implode('username', '<span class="text-danger"> | </span>') !!}
+												@foreach($role->users as $user)
+													<a href="{{ route('users.edit', $user->id) }}">
+														{{ $user->username }}
+													</a>
+													<span class="text-danger">|</span>
+												@endforeach
+												{{-- {!! $role->users->implode('username', '<span class="text-danger"> | </span>') !!} --}}
 											</td>
 											<td class="text-center">
 												<form action="{{ route('roles.destroy', $role->id) }}" method="POST">
