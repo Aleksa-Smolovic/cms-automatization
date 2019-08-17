@@ -26,7 +26,7 @@
 <div class="splash-container">
 	<div class="card">
 		<div class="card-header text-center">
-			{{-- <a href="{{ route('pocetna') }}"> --}}
+			{{-- <a href="/"> --}}
 				{{-- <img class="logo-img" src="{{ asset('assets/images/logo.png') }}" alt="logo"> --}}
 			<h1>Login</h1>
 			{{-- </a> --}}

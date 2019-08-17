@@ -16,7 +16,7 @@
     <span class="hero-text"></span>
     <span class="msg">Zabranjen pristup <span>subscriber</span>-ima.</span>
     <span class="support">
-      <a href="{{ route('pocetna') }}">Vrati se na početnu</a>
+      <a href="/">Vrati se na početnu</a>
     </span>
   </div>
   <div class="lock"></div>

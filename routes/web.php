@@ -1,11 +1,16 @@
 <?php
 
-Route::view('/', 'welcome')->name('pocetna');
+/**
+ * Web Site routes
+ */
+Route::get('/', 'WebsiteController@index');
 
-Auth::routes();
-Route::get('logout', '\App\Http\Controllers\Auth\LoginController@logout');
 
+/**
+ * Admin Panel routes
+ */
 Route::group(['middleware' => ['auth', 'admin']], function () {
+
 	// Users
 	Route::post('/users/{role}/restore', 'UsersController@restore')->name('users.restore');
 	Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
@@ -17,82 +22,91 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 	Route::resource('roles', 'RolesController');
 
 	// Admin
-	Route::get('/admin', 'AdminController@index')->name('admin.index');
+	Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
+});
 
-	  /////////////////////////////
-	 // Concept Template Routes //
-	/////////////////////////////
 
-	// Dashboard
-	Route::get('/dashboard', 'DashboardController@index')->name('dashboard.index');
-	Route::get('/products', 'DashboardController@products')->name('dashboard.products');
-	Route::get('/product-single', 'DashboardController@productSingle')->name('dashboard.product-single');
-	Route::get('/product-checkout', 'DashboardController@productCheckout')->name('dashboard.product-checkout');
-	Route::get('/finance', 'DashboardController@finance')->name('dashboard.finance');
-	Route::get('/sales', 'DashboardController@sales')->name('dashboard.sales');
-	Route::get('/influencer', 'DashboardController@influencer')->name('dashboard.influencer');
-	Route::get('/influencer-finder', 'DashboardController@influencerFinder')->name('dashboard.influencer-finder');
-	Route::get('/influencer-profile', 'DashboardController@influencerProfile')->name('dashboard.influencer-profile');
+/**
+ * Auth routes
+ */
+Auth::routes();
 
-	// UI Elements
-	Route::get('/cards', 'UielementsController@cards')->name('uielements.cards');
-	Route::get('/general', 'UielementsController@general')->name('uielements.general');
-	Route::get('/carousel', 'UielementsController@carousel')->name('uielements.carousel');
-	Route::get('/list-group', 'UielementsController@listGroup')->name('uielements.list-group');
-	Route::get('/typography', 'UielementsController@typography')->name('uielements.typography');
-	Route::get('/accordions', 'UielementsController@accordions')->name('uielements.accordions');
-	Route::get('/tabs', 'UielementsController@tabs')->name('uielements.tabs');
 
-	// Chart
-	Route::get('/c3-charts', 'ChartController@c3charts')->name('chart.c3-charts');
-	Route::get('/chartist-charts', 'ChartController@chartistCharts')->name('chart.chartist-charts');
-	Route::get('/chart', 'ChartController@chart')->name('chart.chart');
-	Route::get('/morris', 'ChartController@morris')->name('chart.morris');
-	Route::get('/sparkline', 'ChartController@sparkline')->name('chart.sparkline');
-	Route::get('/guage', 'ChartController@guage')->name('chart.guage');
+/**
+ * Concept Template Theme routes
+ */
+Route::group(['middleware' => ['auth', 'admin']], function () {
 
-	// Forms
-	Route::get('/form-elements', 'FormsController@formElements')->name('forms.form-elements');
-	Route::get('/form-validation', 'FormsController@formValidation')->name('forms.form-validation');
-	Route::get('/multiselect', 'FormsController@multiselect')->name('forms.multiselect');
-	Route::get('/datepicker', 'FormsController@datepicker')->name('forms.datepicker');
-	Route::get('/bootstrap-select', 'FormsController@bootstrapSelect')->name('forms.bootstrap-select');
+    // Dashboard
+    Route::get('/dashboard', 'ThemeController@index')->name('dashboard.index');
+    Route::get('/products', 'ThemeController@products')->name('dashboard.products');
+    Route::get('/product-single', 'ThemeController@productSingle')->name('dashboard.product-single');
+    Route::get('/product-checkout', 'ThemeController@productCheckout')->name('dashboard.product-checkout');
+    Route::get('/finance', 'ThemeController@finance')->name('dashboard.finance');
+    Route::get('/sales', 'ThemeController@sales')->name('dashboard.sales');
+    Route::get('/influencer', 'ThemeController@influencer')->name('dashboard.influencer');
+    Route::get('/influencer-finder', 'ThemeController@influencerFinder')->name('dashboard.influencer-finder');
+    Route::get('/influencer-profile', 'ThemeController@influencerProfile')->name('dashboard.influencer-profile');
 
-	// Tables
-	Route::get('/general-tables', 'TablesController@generalTables')->name('tables.general-tables');
-	Route::get('/data-tables', 'TablesController@dataTables')->name('tables.data-tables');
+    // UI Elements
+    Route::get('/cards', 'ThemeController@cards')->name('uielements.cards');
+    Route::get('/general', 'ThemeController@general')->name('uielements.general');
+    Route::get('/carousel', 'ThemeController@carousel')->name('uielements.carousel');
+    Route::get('/list-group', 'ThemeController@listGroup')->name('uielements.list-group');
+    Route::get('/typography', 'ThemeController@typography')->name('uielements.typography');
+    Route::get('/accordions', 'ThemeController@accordions')->name('uielements.accordions');
+    Route::get('/tabs', 'ThemeController@tabs')->name('uielements.tabs');
 
-	// Pages
-	Route::get('/blank-page', 'PagesController@blankPage')->name('pages.blank-page');
-	Route::get('/blank-page-header', 'PagesController@blankPageHeader')->name('pages.blank-page-header');
-	Route::get('/login-forma', 'PagesController@loginForma')->name('pages.login-forma');
-	Route::get('/page-404', 'PagesController@page404')->name('pages.page-404');
-	Route::get('/sign-up', 'PagesController@signUp')->name('pages.sign-up');
-	Route::get('/forgot-password', 'PagesController@forgotPassword')->name('pages.forgot-password');
-	Route::get('/pricing', 'PagesController@pricing')->name('pages.pricing');
-	Route::get('/timeline', 'PagesController@timeline')->name('pages.timeline');
-	Route::get('/calendar', 'PagesController@calendar')->name('pages.calendar');
-	Route::get('/sortable-nestable-lists', 'PagesController@sortableNestableLists')->name('pages.sortable-nestable-lists');
-	Route::get('/widgets', 'PagesController@widgets')->name('pages.widgets');
-	Route::get('/media-object', 'PagesController@mediaObject')->name('pages.media-object');
-	Route::get('/cropper-image', 'PagesController@cropperImage')->name('pages.cropper-image');
-	Route::get('/color-picker', 'PagesController@colorPicker')->name('pages.color-picker');
+    // Chart
+    Route::get('/c3-charts', 'ThemeController@c3charts')->name('chart.c3-charts');
+    Route::get('/chartist-charts', 'ThemeController@chartistCharts')->name('chart.chartist-charts');
+    Route::get('/chart', 'ThemeController@chart')->name('chart.chart');
+    Route::get('/morris', 'ThemeController@morris')->name('chart.morris');
+    Route::get('/sparkline', 'ThemeController@sparkline')->name('chart.sparkline');
+    Route::get('/guage', 'ThemeController@guage')->name('chart.guage');
 
-	// Apps
-	Route::get('/inbox', 'AppsController@inbox')->name('apps.inbox');
-	Route::get('/email-details', 'AppsController@emailDetails')->name('apps.email-details');
-	Route::get('/email-compose', 'AppsController@emailCompose')->name('apps.email-compose');
-	Route::get('/message-chat', 'AppsController@messageChat')->name('apps.message-chat');
+    // Forms
+    Route::get('/form-elements', 'ThemeController@formElements')->name('forms.form-elements');
+    Route::get('/form-validation', 'ThemeController@formValidation')->name('forms.form-validation');
+    Route::get('/multiselect', 'ThemeController@multiselect')->name('forms.multiselect');
+    Route::get('/datepicker', 'ThemeController@datepicker')->name('forms.datepicker');
+    Route::get('/bootstrap-select', 'ThemeController@bootstrapSelect')->name('forms.bootstrap-select');
 
-	// Icons
-	Route::get('/icon-fontawesome', 'IconsController@iconFontawesome')->name('icons.icon-fontawesome');
-	Route::get('/icon-material', 'IconsController@iconMaterial')->name('icons.icon-material');
-	Route::get('/icon-simple-lineicon', 'IconsController@iconSimpleLineicon')->name('icons.icon-simple-lineicon');
-	Route::get('/icon-themify', 'IconsController@iconThemify')->name('icons.icon-themify');
-	Route::get('/icon-flag', 'IconsController@iconFlag')->name('icons.icon-flag');
-	Route::get('/icon-weather', 'IconsController@iconWeather')->name('icons.icon-weather');
+    // Tables
+    Route::get('/general-tables', 'ThemeController@generalTables')->name('tables.general-tables');
+    Route::get('/data-tables', 'ThemeController@dataTables')->name('tables.data-tables');
 
-	// Maps
-	Route::get('/map-google', 'MapsController@mapGoogle')->name('maps.map-google');
-	Route::get('/map-vector', 'MapsController@mapVector')->name('maps.map-vector');
+    // Pages
+    Route::get('/blank-page', 'ThemeController@blankPage')->name('pages.blank-page');
+    Route::get('/blank-page-header', 'ThemeController@blankPageHeader')->name('pages.blank-page-header');
+    Route::get('/login-forma', 'ThemeController@loginForma')->name('pages.login-forma');
+    Route::get('/page-404', 'ThemeController@page404')->name('pages.page-404');
+    Route::get('/sign-up', 'ThemeController@signUp')->name('pages.sign-up');
+    Route::get('/forgot-password', 'ThemeController@forgotPassword')->name('pages.forgot-password');
+    Route::get('/pricing', 'ThemeController@pricing')->name('pages.pricing');
+    Route::get('/timeline', 'ThemeController@timeline')->name('pages.timeline');
+    Route::get('/calendar', 'ThemeController@calendar')->name('pages.calendar');
+    Route::get('/sortable-nestable-lists', 'ThemeController@sortableNestableLists')->name('pages.sortable-nestable-lists');
+    Route::get('/widgets', 'ThemeController@widgets')->name('pages.widgets');
+    Route::get('/media-object', 'ThemeController@mediaObject')->name('pages.media-object');
+    Route::get('/cropper-image', 'ThemeController@cropperImage')->name('pages.cropper-image');
+    Route::get('/color-picker', 'ThemeController@colorPicker')->name('pages.color-picker');
+
+    // Apps
+    Route::get('/inbox', 'ThemeController@inbox')->name('apps.inbox');
+    Route::get('/email-details', 'ThemeController@emailDetails')->name('apps.email-details');
+    Route::get('/email-compose', 'ThemeController@emailCompose')->name('apps.email-compose');
+    Route::get('/message-chat', 'ThemeController@messageChat')->name('apps.message-chat');
+
+    // Icons
+    Route::get('/icon-fontawesome', 'ThemeController@iconFontawesome')->name('icons.icon-fontawesome');
+    Route::get('/icon-material', 'ThemeController@iconMaterial')->name('icons.icon-material');
+    Route::get('/icon-simple-lineicon', 'ThemeController@iconSimpleLineicon')->name('icons.icon-simple-lineicon');
+    Route::get('/icon-themify', 'ThemeController@iconThemify')->name('icons.icon-themify');
+    Route::get('/icon-flag', 'ThemeController@iconFlag')->name('icons.icon-flag');
+    Route::get('/icon-weather', 'ThemeController@iconWeather')->name('icons.icon-weather');
+
+    // Maps
+    Route::get('/map-google', 'ThemeController@mapGoogle')->name('maps.map-google');
+    Route::get('/map-vector', 'ThemeController@mapVector')->name('maps.map-vector');
 });

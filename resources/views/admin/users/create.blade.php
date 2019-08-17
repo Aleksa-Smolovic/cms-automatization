@@ -16,14 +16,13 @@
 		<div class="row">
 			<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
 				<div class="page-header" id="top">
-					<h2 class="pageheader-title">Edit User </h2>
+					<h2 class="pageheader-title">Add User </h2>
 					<p class="pageheader-text">Proin placerat ante duiullam scelerisque a velit ac porta, fusce sit amet vestibulum mi. Morbi lobortis pulvinar quam.</p>
 					<div class="page-breadcrumb">
 						<nav aria-label="breadcrumb">
 							<ol class="breadcrumb">
-								<li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Dashboard</a></li>
-								<li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Admin</a></li>
-								<li class="breadcrumb-item active" aria-current="page">Edit User</li>
+								<li class="breadcrumb-item"><a href="admin" class="breadcrumb-link">Dashboard</a></li>
+								<li class="breadcrumb-item active" aria-current="page">Add User</li>
 							</ol>
 						</nav>
 					</div>
@@ -32,38 +31,37 @@
 		</div>
 
 		<div class="row">
-			<div class="col-xl-8 col-lg-8 col-md-8 col-sm-8 col-8 offset-xl-2 offset-md-2 offset-lg-2 offset-sm-2">
+			<div class="col-xl-10 col-lg-10 col-md-10 col-sm-10 col-10 offset-xl-1 offset-md-1 offset-lg-1 offset-sm-1">
 			<div class="card">
-				<h5 class="card-header">Edit User</h5>
+				<h5 class="card-header">Add User</h5>
 				<div class="card-body">
-					<form method="POST" action="{{ route('users.update', compact('user')) }}">
-						@method('PATCH')
+					<form method="POST" action="{{ route('users.store') }}">
 						@csrf
 						
 						<div class="form-group">
 							<label class="col-form-label" for="first_name">First Name</label>
-								<input class="form-control {{ $errors->has('first_name') ? 'is-invalid' : '' }}" name="first_name" type="text" placeholder="First Name" value="{{ old('first_name') ?? $user->first_name }}">
+								<input class="form-control {{ $errors->has('first_name') ? 'is-invalid' : '' }}" name="first_name" type="text" placeholder="First Name" value="{{ old('first_name') }}">
 						</div>
 						
 						@include('partials.error', ['name' => 'first_name'])
 
 						<div class="form-group">
 							<label class="col-form-label" for="last_name">Last Name</label>
-							<input class="form-control {{ $errors->has('last_name') ? 'is-invalid' : '' }}" name="last_name" type="text" placeholder="Last Name" value="{{ old('last_name') ?? $user->last_name }}">
+							<input class="form-control {{ $errors->has('last_name') ? 'is-invalid' : '' }}" name="last_name" type="text" placeholder="Last Name" value="{{ old('last_name') }}">
 						</div>
 						
 						@include('partials.error', ['name' => 'last_name'])
 
 						<div class="form-group">
 							<label class="col-form-label" for="username">Username</label>
-							<input class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}" name="username" type="text" placeholder="Username" value="{{ old('username') ?? $user->username }}">
+							<input class="form-control {{ $errors->has('username') ? 'is-invalid' : '' }}" name="username" type="text" placeholder="Username" value="{{ old('username') }}">
 						</div>
 
 						@include('partials.error', ['name' => 'username'])
 
 						<div class="form-group">
 							<label class="col-form-label" for="email">Email</label>
-							<input class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}" name="email" type="email" placeholder="Email" value="{{ old('email') ?? $user->email }}">
+							<input class="form-control {{ $errors->has('email') ? 'is-invalid' : '' }}" name="email" type="email" placeholder="Email" value="{{ old('email') }}">
 						</div>
 						
 						@include('partials.error', ['name' => 'email'])
@@ -71,17 +69,13 @@
 						<div class="form-group">
 							<label class="col-form-label" for="role_id">Role</label>
 							<div class="row">
-								<div class="col-xs-3 col-md-3 col-lg-3 col-xl-3">
+								<div class="col-xs-2 col-md-2 col-lg-2 col-xl-2">
 									<select class="form-control" name="role_id">
 										@foreach($roles as $role)
 											<option value="{{ $role->id }}"
-												@if(!empty(old('role_id')))
-													{{ $role->id == old('role_id') ? 'selected' : '' }}
-												@else
-													{{ $role->id == $user->role_id ? 'selected' : '' }}
-												@endif
+												{{ old('role_id') == $role->id ? 'selected' : '' }}
 											>
-												{{ old('role_id')->name ?? ucfirst($role->name) }}
+												{{ ucfirst($role->name) }}
 											</option>
 										@endforeach
 									</select>
@@ -102,7 +96,7 @@
 						</div>
 						
 						<div class="form-group">
-							<button class="btn btn-primary" type="submit">Update User</button>
+							<button class="btn btn-primary" type="submit">Add User</button>
 						</div>
 					</form>
 				</div>

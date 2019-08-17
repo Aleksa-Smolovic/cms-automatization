@@ -23,8 +23,7 @@
 					<div class="page-breadcrumb">
 						<nav aria-label="breadcrumb">
 							<ol class="breadcrumb">
-								<li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Dashboard</a></li>
-								<li class="breadcrumb-item"><a href="#" class="breadcrumb-link">Admin</a></li>
+								<li class="breadcrumb-item"><a href="/admin" class="breadcrumb-link">Dashboard</a></li>
 								<li class="breadcrumb-item active" aria-current="page">Roles</li>
 							</ol>
 						</nav>
@@ -34,12 +33,9 @@
 		</div>
 
 		<div class="row">
-			<!-- ============================================================== -->
-			<!-- basic table  -->
-			<!-- ============================================================== -->
 			<div class="col-xl-8 col-lg-8 col-md-8 col-sm-8 col-8 offset-xl-2 offset-lg-2 offset-md-2 offset-xs-2">
 				
-				@include('partials.error2')
+				@include('partials.error', ['name' => 'aborted'])
 				@include('partials.success')
 
 				<div class="card">
@@ -77,9 +73,6 @@
 					</div>
 				</div>
 			</div>
-			<!-- ============================================================== -->
-			<!-- end basic table  -->
-			<!-- ============================================================== -->
 		</div>
 	</div>
 </div>

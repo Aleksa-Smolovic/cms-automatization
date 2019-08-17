@@ -4,7 +4,6 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale = 1.0, maximum-scale=1.0, user-scalable=no" />
 	<title>Lorem</title>
-	{{-- <link rel="stylesheet" href="{{ asset('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css') }}"> --}}
 
 	@yield('css')
 
@@ -33,7 +32,11 @@
 				@endguest
 				<li class="nav-item active">
 					@auth
-						<a class="nav-link d-inline-block" href="{{ route('logout') }}">Logout <span class="sr-only">(current)</span></a>
+						<a class="nav-link d-inline-block" href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+							Logout <span class="sr-only">(current)</span></a>
+						<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+							@csrf
+						</form>
 						@if(auth()->user()->role->id === 1)
 							<a class="nav-link d-inline-block" href="{{ route('admin.index') }}">Admin <span class="sr-only">(current)</span></a>
 						@endif
@@ -48,9 +51,6 @@
 	
 	@yield('content')
 
-	{{-- <script src="{{ asset('https://code.jquery.com/jquery-3.4.1.js') }}" crossorigin="anonymous"></script>
-	<script src="{{ asset('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js') }}"></script>
-	<script src="{{ asset('https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.bundle.min.js') }}"></script> --}}
 	
 	@yield('js')
 
