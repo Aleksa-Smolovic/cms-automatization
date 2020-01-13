@@ -2,7 +2,9 @@ jQuery(document).ready(function($) {
     'use strict';
 
     if ($("#datetimepicker1").length) {
-        $('#datetimepicker1').datetimepicker();
+        $('#datetimepicker1').datetimepicker({
+            format: 'DD/MM/YYYY HH:MM:SS'
+        });
 
     }
 
@@ -31,7 +33,7 @@ jQuery(document).ready(function($) {
 
     if ($("#datetimepicker4").length) {
         $('#datetimepicker4').datetimepicker({
-            format: 'L'
+            format: 'DD/MM/YYYY'
         });
 
     }

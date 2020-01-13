@@ -4,6 +4,7 @@
  * Web Site routes
  */
 Route::get('/', 'WebsiteController@index');
+Route::get('/test', 'AutomatizationInputController@automate');
 
 
 /**
@@ -22,7 +23,12 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 	Route::resource('roles', 'RolesController');
 
 	// Admin
-	Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
+    Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
+    
+ 
+    //->MARKER
+
+    
 });
 
 
