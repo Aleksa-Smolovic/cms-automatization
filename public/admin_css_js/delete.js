@@ -7,10 +7,11 @@ $(".delBtn").on("click", function(event) {
         dangerMode: true
     }).then(willDelete => {
         if (willDelete) {
-            //TODO FIX
-            $( this ).submit();
+            var form = $(this).parents('form:first');
+            form.submit();
         } else {
             swal("Vaši podaci su sigurni!");
         }
     });
 });
+
