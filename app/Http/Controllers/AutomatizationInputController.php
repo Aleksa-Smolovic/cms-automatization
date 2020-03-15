@@ -11,6 +11,17 @@ class AutomatizationInputController extends Controller
     public function automate(){
         $automateArray = [];
 
+        $date = new TableContent("date", "date_published", "Datum objave", "date", null);
+        $infected_montenegro = new TableContent("integer", "infected_montenegro", "Broj zaraženih u Crnoj Gori", "number", null);
+        $infected_global = new TableContent("integer", "infected_global", "Broj zaraženih u Crnoj Gori", "number", null);
+        $under_watch = new TableContent("integer", "under_watch", "Broj osoba pod nadzorom", "number", null);
+        $tested = new TableContent("integer", "tested", "Broj zaraženih u Crnoj Gori", "number", null);
+        $contentArray = [$date, $infected_montenegro, $infected_global, $under_watch, $tested];
+        $arrStats = ['model_name' => "Stats", "table_name" => "stats", "attributes" => $contentArray];
+        array_push($automateArray, $arrStats);
+
+        /*
+
         $title = new TableContent('string', 'name', 'Naziv', 'text', null);
         $contentArray = [];
         $contentArray[] = $title;
@@ -127,6 +138,8 @@ class AutomatizationInputController extends Controller
         $contentArray = [$name, $image, $noMatches, $noVictory, $noDraw, $noLost, $noGoals, $noReceived, $difference, $points];
         $arrTable = ['model_name' => 'Table', 'table_name' => 'tables', 'attributes' => $contentArray];
         array_push($automateArray, $arrTable);
+
+        */
 
         $testController = new TestController();
 

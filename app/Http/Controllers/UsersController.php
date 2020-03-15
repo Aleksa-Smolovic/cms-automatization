@@ -53,6 +53,7 @@ class UsersController extends Controller
 		$user->username   = $data['username'];
 		$user->email      = $data['email'];
 		$user->password   = $data['password'];
+		dd($user);return;
 		$user->save();
 
 		return redirect(route('users.index'))->with('success', 'User added successfully.');

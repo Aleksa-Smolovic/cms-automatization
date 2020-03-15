@@ -25,7 +25,21 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 	// Admin
     Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
     
- 
+
+    
+    Route::get('/admin/stats', 'StatsController@index')->name('admin/stats');
+    Route::get('/admin/stats/deleted', 'StatsController@deleted')->name('admin/stats/deleted');
+    Route::delete('/admin/stats/delete/{id}', 'StatsController@destroy')->name('stats/delete');
+    Route::post('/admin/stats/restore/{id}', 'StatsController@restore')->name('stats/restore');
+    Route::post('/admin/stats/store', 'StatsController@store')->name('stats/store');
+    Route::post('/admin/stats/edit', 'StatsController@edit')->name('stats/edit');
+    
+    Route::get('/admin/stats', 'StatsController@index')->name('admin/stats');
+    Route::get('/admin/stats/deleted', 'StatsController@deleted')->name('admin/stats/deleted');
+    Route::delete('/admin/stats/delete/{id}', 'StatsController@destroy')->name('stats/delete');
+    Route::post('/admin/stats/restore/{id}', 'StatsController@restore')->name('stats/restore');
+    Route::post('/admin/stats/store', 'StatsController@store')->name('stats/store');
+    Route::post('/admin/stats/edit', 'StatsController@edit')->name('stats/edit');
     //->MARKER
 
     

@@ -155,7 +155,13 @@
 
 							
         							
-									<!-- MARKER -->							
+									
+        	<li class="nav-item">
+                <a class="nav-link" href="{{ route('admin/stats') }}">
+                    <i class="fab fa-fw fa-wpforms"></i>StatsController
+                </a>
+            </li>
+            <!-- MARKER -->							
 
 
 									<li class="nav-item">
