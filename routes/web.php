@@ -6,6 +6,7 @@
 Route::get('/', 'WebsiteController@index');
 Route::get('/test', 'AutomatizationInputController@automate');
 
+// Route::get('/users/{user}', 'UsersController@edit')->name('users.edit');
 
 /**
  * Admin Panel routes
@@ -14,7 +15,7 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 
 	// Users
 	Route::post('/users/{role}/restore', 'UsersController@restore')->name('users.restore');
-	Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
+    Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
 	Route::resource('users', 'UsersController');
 
 	// Roles
@@ -25,10 +26,8 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 	// Admin
     Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
     
- 
     //->MARKER
 
-    
 });
 
 

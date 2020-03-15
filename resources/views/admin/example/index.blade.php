@@ -41,8 +41,8 @@
 											<!-- Marker Table Content -->
 											<td class="text-center">
 												<form>
-													<a href="javascript:void(0)" data-toggle="modal" data-id="{{$object->id}}" data-marker
-														data-target="#myModal" class="edit btn btn-sm btn-success">Izmijeni</a>
+													<a href="javascript:void(0)" data-toggle="modal" data-id="{{$object->id}}" data-route="data-route-marker"
+														data-target="#myModal" class="edit show-object-data btn btn-sm btn-success">Izmijeni</a>
 												</form>
                                             </td>
 											<td class="text-center">
@@ -71,10 +71,6 @@
 <script>
 var route = "tableNameMarker/store";
 var clickable = true;
-$('#myModal').on('show.bs.modal', function(e) {
-	$('#id').val( $(e.relatedTarget).data('id') );
-	//OpenModalMarker
-});
 
 $('#myModal').on('hidden.bs.modal', function () {
 	$(".submitForm")[0].reset();
@@ -92,6 +88,12 @@ $(".edit").click(function(){
 $('.table').DataTable({
     "order": [[ 0, "desc" ]]
 });
+
+function showData(returndata){
+	$('#id').val(returndata.id);
+	//OpenModalMarker
+	$('#myModal').modal('show'); 
+}
 
 </script>
 

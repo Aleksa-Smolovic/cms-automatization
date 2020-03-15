@@ -153,10 +153,7 @@
 								</li>
 								<ul class="nav flex-column">
 
-							
-        							
-									<!-- MARKER -->							
-
+            						<!-- MARKER -->							
 
 									<li class="nav-item">
 										<a class="nav-link" href="{{ route('admin.index') }}">
@@ -513,8 +510,6 @@
 		<script src="{{ asset('https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js')}}"></script>
 		<script src="{{ asset('assets/vendor/datatables/js/buttons.bootstrap4.min.js') }}"></script>
 		<script src="{{ asset('assets/vendor/datatables/js/data-table.js') }}"></script>
-		<script src="{{ asset('assets/maps/ol.js') }}"></script>
-		<script src="{{ asset('assets/maps/mapSetup.js') }}"></script>
 		<script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js') }}"></script>
 		<script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js') }}"></script>
 		<script src="{{ asset('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js') }}"></script>
@@ -533,6 +528,7 @@
 
 		<script src="{{ asset('admin_css_js/ajaxSubmitForm.js') }}"></script>
 		<script src="{{ asset('admin_css_js/delete.js') }}"></script>
+		<script src="{{ asset('admin_css_js/ajaxFetch.js') }}"></script>
 
 	</body>
 </html>

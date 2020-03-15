@@ -16,6 +16,8 @@ class TestController extends Controller
     //TO DO upisati u jedan fajl? writeController   
     //TO DO automateV4 -> da li funkcije da zovu jedna drugu?
 
+    private $ajaxReturnData = 'returndata';
+
     public function insertIntoIndex($modelName, $tableName){
         $routeIndex = str_replace("_","-", $tableName);
         $item = "
@@ -39,6 +41,7 @@ class TestController extends Controller
 
         $item = "
     Route::get('/admin/" . $tableName . "', '" . $controllerName . "Controller@index')->name('admin/" . $tableName . "');
+    Route::get('/admin/" . $tableName . "/{id}', '" . $controllerName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
     Route::get('/admin/" . $tableName . "/deleted', '" . $controllerName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
     Route::delete('/admin/" . $tableName . "/delete/{id}', '" . $controllerName . "Controller@destroy')->name('" . $tableName . "/delete');
     Route::post('/admin/" . $tableName . "/restore/{id}', '" . $controllerName . "Controller@restore')->name('" . $tableName . "/restore');
@@ -127,6 +130,11 @@ use App\\' . $modelName . ';';
         $objects = ' . $modelName . '::orderBy("id", "DESC")->get();
         return view("admin.' . str_replace("_","-", $tableName) . '.index",  compact("objects"));
     }
+
+    public function getOne($id){
+        $object = ' . $modelName . '::find($id);
+        return $object ? $object : null;
+    }
     
     public function destroy($id){
         $object = ' . $modelName . '::find($id);
@@ -165,11 +173,8 @@ use App\\' . $modelName . ';';
             return;
         }
 
-        $marker = '$table->bigIncrements(\'id\');
-            $table->timestamps();';
-
-        $attributesOutput = '$table->bigIncrements("id");
-            ';
+        $marker = '$table->timestamps();';
+        $attributesOutput = '';
 
         for($i = 0; $i < count($contentArray); $i++){
             
@@ -364,19 +369,19 @@ use App\\' . $modelName . ';';
 
         $tableHeaders = $tableContent = $editBtnData = $modalOpenValue = $htmlInputs = $modalCloseValue = '';
 
+        $editBtnData .=  $tableName . '/{{$object->id}}';
+
         for($i = 0; $i < count($contentArray); $i++){
             $tableHeaders .= '<th class="text-center">' . $contentArray[$i]->placeholder . '</th>
             ';
             $tableContent .= $this->getTableContent($contentArray[$i]);
-            $editBtnData .= 'data-' . $contentArray[$i]->name . '="{{$object->' . $contentArray[$i]->name . '}}"
-            ';
             if($contentArray[$i]->inputType == 'file' && $contentArray[$i]->additionalData['type'] == 'image'){
-                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "Holder').attr({ 'src': $(e.relatedTarget).data('" . $contentArray[$i]->name . "') });
+                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "Holder').attr({ 'src': " . $this->ajaxReturnData .".". $contentArray[$i]->name . " });
                 ";
                 $modalCloseValue = 'var $image = $("#' . $contentArray[$i]->name . 'Holder");
             $("#' . $contentArray[$i]->name . 'Holder").removeAttr("src").replaceWith($image.clone());';
             }else{
-                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "').val( $(e.relatedTarget).data('" . $contentArray[$i]->name . "') );
+                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "').val(" . $this->ajaxReturnData .".". $contentArray[$i]->name . " );
                 ";
             }
             $htmlInputs .= $this->getHtmlInputs($contentArray[$i]);
@@ -384,7 +389,7 @@ use App\\' . $modelName . ';';
 
         $indexContent = str_replace("<!-- Marker Table Heading -->", $tableHeaders, $indexContent);
         $indexContent = str_replace("<!-- Marker Table Content -->", $tableContent, $indexContent);
-        $indexContent = str_replace("data-marker", $editBtnData, $indexContent);
+        $indexContent = str_replace("data-route-marker", $editBtnData, $indexContent);
         $indexContent = str_replace("tableNameMarker", $tableName, $indexContent);
         $indexContent = str_replace("//OpenModalMarker", $modalOpenValue, $indexContent);
         $indexContent = str_replace("//CloseModalMarker", $modalCloseValue, $indexContent);
