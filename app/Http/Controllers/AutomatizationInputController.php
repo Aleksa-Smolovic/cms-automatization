@@ -19,8 +19,8 @@ class AutomatizationInputController extends Controller
 
         // $author = new TableContent('string', 'author', 'Autor', 'text', null);
         // $title = new TableContent('string', 'title', 'Naslov', 'text', null);
-        // $shortDescription = new TableContent('text', 'short_description', 'Kratak opis', 'txt', null);
-        // $content = new TableContent('text', 'content', 'Sadržaj', 'txt', null);
+        // $shortDescription = new TableContent('text', 'short_description', 'Kratak opis', 'textarea', null);
+        // $content = new TableContent('text', 'content', 'Sadržaj', 'textarea', null);
         // $status = new TableContent('string', 'status', 'Status', 'text', null);
         // $image = new TableContent('text', 'image', 'Slika', 'file', ['type' => 'image']);
         // $timestamp = new TableContent('datetime', 'datetime', 'Datum', 'datetime', null);
@@ -53,7 +53,7 @@ class AutomatizationInputController extends Controller
         // $number = new TableContent('integer', 'number', 'Broj', 'number', null);
         // $date = new TableContent('date', 'date', 'Datum rođenja', 'date', null);
         // $birthPlace = new TableContent('string', 'birth_place', 'Mjesto rođenja', 'text', null);
-        // $bio = new TableContent('text', 'bio', 'Biografija', 'txt', null);
+        // $bio = new TableContent('text', 'bio', 'Biografija', 'textarea', null);
         // $height = new TableContent('double', 'height', 'Visina', 'number', null);
         // $weight = new TableContent('double', 'weight', 'Težina', 'number', null);
         // $profileImage = new TableContent('text', 'profile_image', 'Profilna slika', 'file', ['type' => 'image']);
@@ -76,7 +76,7 @@ class AutomatizationInputController extends Controller
         // $arrSeason = ['model_name' => 'Season', 'table_name' => 'seasons', 'attributes' => $contentArray];
         // array_push($automateArray, $arrSeason);
 
-        // $content = new TableContent('text', 'content', 'Sadržaj', 'txt', null);
+        // $content = new TableContent('text', 'content', 'Sadržaj', 'textarea', null);
         // $contentArray = [];
         // $contentArray[] = $content;
         // $arrHistory = ['model_name' => 'History', 'table_name' => 'histories', 'attributes' => $contentArray];
@@ -84,8 +84,8 @@ class AutomatizationInputController extends Controller
 
         // $author = new TableContent('string', 'author', 'Autor', 'text', null);
         // $title = new TableContent('string', 'title', 'Naslov', 'text', null);
-        // $shortDescription = new TableContent('text', 'short_description', 'Kratak opis', 'txt', null);
-        // $content = new TableContent('text', 'content', 'Sadržaj', 'txt', null);
+        // $shortDescription = new TableContent('text', 'short_description', 'Kratak opis', 'textarea', null);
+        // $content = new TableContent('text', 'content', 'Sadržaj', 'textarea', null);
         // $status = new TableContent('string', 'status', 'Status', 'text', null);
         // $image = new TableContent('text', 'image', 'Slika', 'file', ['type' => 'image']);
         // $timestamp = new TableContent('datetime', 'datetime', 'Datum', 'datetime', null);
@@ -128,12 +128,12 @@ class AutomatizationInputController extends Controller
         // $arrTable = ['model_name' => 'Table', 'table_name' => 'tables', 'attributes' => $contentArray];
         // array_push($automateArray, $arrTable);
 
-        $testController = new TestController();
+        $testController = new GeneratorController();
 
         // print_r($automateArray);
         // print_r($automateArray[12]['attributes'][5]);
         for($i = 0; $i < count($automateArray); $i++){
-            $testController->automateGenerate($automateArray[$i]);
+            $testController->generate($automateArray[$i]);
         }
     }
 

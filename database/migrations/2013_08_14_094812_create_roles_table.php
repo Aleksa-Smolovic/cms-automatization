@@ -18,6 +18,7 @@ class CreateRolesTable extends Migration
             // $table->enum('name', ['admin', 'subscriber']);
             $table->string('name');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

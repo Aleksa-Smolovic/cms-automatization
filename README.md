@@ -29,10 +29,10 @@ array_push($automateArray, $arrNews);
 ```
 
 Repeat the process for as many tables as needed.
-At the end,loop through the mentioned array (`$automateArray`) and call function `automateGenerate()` from `TestController`:
+At the end,loop through the mentioned array (`$automateArray`) and call function `automateGenerate()` from `GeneratorController`:
 
 ```
-$testController = new TestController();
+$testController = new GeneratorController();
 for($i = 0; $i < count($automateArray); $i++){
     $testController->automateGenerate($automateArray[$i]);
 }
@@ -44,7 +44,7 @@ Required parameters:
 - Database attribute data type (supported: string, text, integer, double, date, datetime, image), default(unsignedBigInteger)->avoid
 - Database attribute name (directly translated to table)
 - Attribute placeholder - attribute display name
-- Input type - html form input type (supported: txt, date, datetime) default: as is ie. number -> '<input type="number"/>'
+- Input type - html form input type (supported: textarea, date, datetime) default: as is ie. number -> '<input type="number"/>'
 - Additional data (nullable), holds data required for some fields, ie. for file type image:
 
 ```

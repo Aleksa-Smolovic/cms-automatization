@@ -8,8 +8,8 @@ use App\TableContent;
 class GenerateEntity extends Command
 {
 
-    private $dataTypes = ['String', 'Text', 'Integer', 'Double', 'Date', 'datetime', 'image'];
-    private $inputTypes = ['text', 'date', 'datetime', 'file', 'number'];
+    private $dataTypes = ['string', 'text', 'integer', 'double', 'date', 'datetime', 'image', 'boolean'];
+    private $inputTypes = ['text', 'date', 'datetime', 'file', 'number', 'textarea', 'email', 'password'];
 
     /**
      * The name and signature of the console command.
@@ -46,9 +46,21 @@ class GenerateEntity extends Command
         // $entityName = $this->argument('entity'); -> when using inside command
 
         $modelName = $this->ask('Model name');
-        //TODO check if exists
-        //TODO check errors (empty)
+        if(trim($modelName) == ''){
+            return;
+        }else if(file_exists('app/' . $modelName . '.php')){
+            $this->error('Model already exists!');
+            return;
+        }
+            
         $tableName = $this->ask('Table name (as is)');
+        $folderName = strtolower(str_replace("_","-", $tableName));
+        if(trim($tableName) == ''){
+            return;
+        }else if(file_exists('resources/views/admin/' . $folderName)){
+            $this->error('Folder ' . $folderName . ' already exists!');
+            return;
+        }
 
         $fields = [];
         $moreFields = true;
@@ -56,16 +68,19 @@ class GenerateEntity extends Command
         array_push($fields, $this->fetchField($this));
 
         while($moreFields){
-           if(!($this->confirm('Do you want to add more fields?')))
+            $this->line($modelName . ':');
+            for($i = 0; $i < count($fields); $i ++)
+                $this->line('- ' . $fields[$i]->name . ' (' . $fields[$i]->dataType . ')');
+            if(!($this->confirm('Do you want to add more fields?')))
                 break 1;
            array_push($fields, $this->fetchField($this));
         }
 
         $entity = ['model_name' => $modelName, 'table_name' => $tableName, 'attributes' => $fields];
-        $generator = new \App\Http\Controllers\TestController();
-        // $generator->automateGenerate($entity);
+        $generator = new \App\Http\Controllers\GeneratorController();
 
         $this->output->progressStart(10);
+        $generator->generate($entity);
         for($i = 0; $i < 10; $i++){
             sleep(0.25);
             $this->output->progressAdvance();
@@ -80,8 +95,20 @@ class GenerateEntity extends Command
         $fieldDataType = $state->choice('Field data type', $this->dataTypes, $this->dataTypes[0]);
         $fieldInputType = $state->choice('Field input type', $this->inputTypes, $this->inputTypes[0]);
         $fieldAdditionalData = $state->choice('Field additional data', ['No', 'Image'], 'No');
-        $fieldAdditionalData = $fieldAdditionalData == 'No' ? null : $fieldAdditionalData;
-        return new TableContent($fieldDataType, $fieldName, $fieldDisplayName, $fieldInputType, $fieldAdditionalData);
+        return new TableContent($fieldDataType, $fieldName, $fieldDisplayName, $fieldInputType, $this->getAdditionalData($fieldAdditionalData));
+    }
+
+    function getAdditionalData($additionalData){
+        $returnData;
+        switch($additionalData){
+            case 'No':
+                $returnData = null;
+            break;
+            case 'Image':
+                $returnData['type'] = 'image';
+            break;
+        }
+        return $returnData;
     }
 
 }

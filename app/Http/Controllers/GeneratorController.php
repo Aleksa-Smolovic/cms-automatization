@@ -6,10 +6,10 @@ use Illuminate\Http\Request;
 use Artisan;
 use App\TableContent;
 
-class TestController extends Controller
+class GeneratorController extends Controller
 {
     //include: Class -> TableContent, Example resource folder, Admin css/js,
-    //Tags in web and index.blade(nav), FileHandle Trait, TestController, AutomatizationInputController
+    //Tags in web and index.blade(nav), FileHandle Trait, GeneratorController, AutomatizationInputController
 
     //TO DO Error Handling
     //TO DO _ -> - za spaceove
@@ -28,7 +28,7 @@ class TestController extends Controller
             </li>
             <!-- MARKER -->";
 
-        $file_path = "../resources/views/layouts/index.blade.php";
+        $file_path = "resources/views/layouts/index.blade.php";
 
         $str = file_get_contents($file_path);
         $str = str_replace("<!-- MARKER -->", $item, $str);
@@ -49,7 +49,7 @@ class TestController extends Controller
     Route::post('/admin/" . $tableName . "/edit', '" . $controllerName . "Controller@edit')->name('" . $tableName . "/edit');
     //->MARKER";
 
-        $file_path = "../routes/web.php";
+        $file_path = "routes/web.php";
 
         $str = file_get_contents($file_path);
         $str = str_replace("//->MARKER", $item, $str);
@@ -59,29 +59,29 @@ class TestController extends Controller
     //TO DO vidjeti moze li create or replace na file ili folder?
     public function createIndexDeletedFiles($tableName){
         $tableName = strtolower($tableName);
-        if (!file_exists('../resources/views/admin/' . $tableName)) {
-            if(!mkdir('../resources/views/admin/' . $tableName, 0777, true));
+        if (!file_exists('resources/views/admin/' . $tableName)) {
+            if(!mkdir('resources/views/admin/' . $tableName, 0777, true));
         }else{
-            echo $tableName;
+            exit($tableName);
         }
 
         //TO DO povuci sa interneta fajl?
-        $indexContent = file_get_contents('../resources/views/admin/example/index.blade.php');
-        $myfile = fopen("../resources/views/admin/" . $tableName . "/index.blade.php", "w") or die("Unable to open file!");
+        $indexContent = file_get_contents('resources/views/admin/example/index.blade.php');
+        $myfile = fopen("resources/views/admin/" . $tableName . "/index.blade.php", "w") or die("Unable to open file!");
         fwrite($myfile, $indexContent);
         fclose($myfile);
 
-        $deletedContent = file_get_contents('../resources/views/admin/example/deleted.blade.php');
-        $deletedFile = fopen("../resources/views/admin/" . $tableName . "/deleted.blade.php", "w") or die("Unable to open file!");
+        $deletedContent = file_get_contents('resources/views/admin/example/deleted.blade.php');
+        $deletedFile = fopen("resources/views/admin/" . $tableName . "/deleted.blade.php", "w") or die("Unable to open file!");
         fwrite($deletedFile, $deletedContent);
         fclose($deletedFile);
     }
 
-    public function createModelController($modelName, $tableName, $dateTypesArray){
+    public function createModelController($modelName, $tableName, $mutatorsArray){
         Artisan::call('make:model ' . $modelName . ' -m');
         Artisan::call('make:controller ' . $this->capitalizeAttributes($tableName) . 'Controller');
 
-        $file_path = "../app/" . $modelName . '.php';
+        $file_path = "app/" . $modelName . '.php';
 
         $includesMarker = 'use Illuminate\Database\Eloquent\Model;';
 
@@ -94,9 +94,8 @@ use App\Traits\FileHandling;';
         $str = str_replace($includesMarker, $includes, $str);
 
         $mutators = '';
-        for($i = 0; $i < count($dateTypesArray); $i++){
-            $mutators .= $this->createMutators($dateTypesArray[$i]);
-        }
+        for($i = 0; $i < count($mutatorsArray); $i++)
+            $mutators .= $this->createMutators($mutatorsArray[$i]);
 
         $content = '
     use SoftDeletes, FileHandling;
@@ -113,7 +112,7 @@ use App\Traits\FileHandling;';
 
     public function writeController($modelName, $tableName){
         $controllerName = $this->capitalizeAttributes($tableName);
-        $file_path = "../app/Http/Controllers/" . $controllerName . 'Controller.php';
+        $file_path = "app/Http/Controllers/" . $controllerName . 'Controller.php';
         $str = file_get_contents($file_path);
 
         $includesMarker = 'use Illuminate\Http\Request;';
@@ -162,7 +161,7 @@ use App\\' . $modelName . ';';
 
     public function changeMigrations($tableName, $contentArray){
 
-        $filename = "../database/migrations/*";
+        $filename = "database/migrations/*";
         foreach (glob($filename) as $filefound) {
             if(strpos($filefound, $tableName) !== false){
                 $migrationFileName = $filefound;
@@ -235,7 +234,7 @@ use App\\' . $modelName . ';';
         $tableName = 'Blogs';
 
         $title = new TableContent('string', 'title', 'Naziv', 'text', null);
-        $text = new TableContent('text', 'text', 'Tekst', 'txt', null);
+        $text = new TableContent('text', 'text', 'Tekst', 'textarea', null);
         $image = new TableContent('text', 'image', 'Slika', 'file', ['type' => 'image']);
         $date = new TableContent('date', 'date_from', 'Datum od', 'date', null);
         $timestamp = new TableContent('datetime', 'timestamp_from', 'Timestamp Od', 'datetime', null);
@@ -266,7 +265,7 @@ use App\\' . $modelName . ';';
     public function getHtmlInputs(TableContent $tableContentInsance){
 
         switch($tableContentInsance->inputType){
-            case 'txt':
+            case 'textarea':
                 return '
                     <div class="row">
                         <div class="col-12"> 
@@ -353,7 +352,7 @@ use App\\' . $modelName . ';';
         switch($tableContent->additionalData['type']){
             case 'image':
                 return '<td class="text-center">
-                            <img class="rounded" src="{{ asset("$object->' . $tableContent->name . '")}}" width="60">
+                            <img class="rounded" src="{{ $object->' . $tableContent->name . '}}" width="60">
                         </td>';
                 break;
             default:
@@ -364,7 +363,7 @@ use App\\' . $modelName . ';';
     }
 
     public function writeIndexBlade($tableName, $contentArray){
-        $file_path = "../resources/views/admin/" . $tableName . "/index.blade.php";
+        $file_path = "resources/views/admin/" . $tableName . "/index.blade.php";
         $indexContent = file_get_contents($file_path);
 
         $tableHeaders = $tableContent = $editBtnData = $modalOpenValue = $htmlInputs = $modalCloseValue = '';
@@ -396,7 +395,7 @@ use App\\' . $modelName . ';';
         $indexContent = str_replace("<!-- InputsMarker -->", $htmlInputs, $indexContent);
         file_put_contents($file_path, $indexContent);
 
-        $file_path = "../resources/views/admin/" . $tableName . "/deleted.blade.php";
+        $file_path = "resources/views/admin/" . $tableName . "/deleted.blade.php";
         $deletedContent = file_get_contents($file_path);
         $deletedContent = str_replace("<!-- Marker Table Heading -->", $tableHeaders, $deletedContent);
         $deletedContent = str_replace("<!-- Marker Table Content -->", $tableContent, $deletedContent);
@@ -405,7 +404,7 @@ use App\\' . $modelName . ';';
     }
 
     public function controllerStore($modelName, $tableName, $contentArray){
-        $file_path = "../app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
+        $file_path = "app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
         $str = file_get_contents($file_path);
 
         $declaringValidation = '$data = $request->validate([';
@@ -452,7 +451,7 @@ use App\\' . $modelName . ';';
     public function declareValidation(TableContent $tableContentInsance){
 
         switch($tableContentInsance->inputType){
-            case 'txt':
+            case 'textarea':
                 return "
             '$tableContentInsance->name' => 'required|max:10000',";
                 break;
@@ -483,7 +482,7 @@ use App\\' . $modelName . ';';
     public function validationAlerts(TableContent $tableContentInsance){
 
         switch($tableContentInsance->inputType){
-            case 'txt':
+            case 'textarea':
                 return "
             '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
             '$tableContentInsance->name.max' => '$tableContentInsance->placeholder može sadržati maksimum 10000 karakera!',";
@@ -520,7 +519,7 @@ use App\\' . $modelName . ';';
     }
 
     public function controllerEdit($modelName, $tableName, $contentArray){
-        $file_path = "../app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
+        $file_path = "app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
         $str = file_get_contents($file_path);
 
         $declaringValidation = '$data = $request->validate([
@@ -592,6 +591,13 @@ use App\\' . $modelName . ';';
             {
                 $this->attributes["' . $tableContentInsance->name . '"] = Carbon::createFromFormat("d/m/Y H:i:s", $value);
             }';
+                break;
+            case 'image':
+                    return '
+            public function get' . $this->capitalizeAttributes($tableContentInsance->name) . 'Attribute($value){
+                return asset($value);
+            }';
+                break;
         }
     }
 
@@ -603,30 +609,27 @@ use App\\' . $modelName . ';';
         return join('', $frags);
     }
 
-    public function automateGenerate($table){
-        //tableName = blog_categories
-        //modelName = BlogCategory
+    public function generate($table){
         $tableName = strtolower($table['table_name']);
         $modelName = $table['model_name'];
 
-        $dateTypesArray = [];
+        $mutatorsArray = [];
         $contentArray = $table['attributes'];
         for($i = 0; $i < count($contentArray); $i++){
-            if($contentArray[$i]->dataType == 'date' || $contentArray[$i]->dataType == 'datetime')
-                array_push($dateTypesArray, $contentArray[$i]);
+            if($contentArray[$i]->dataType == 'date' || $contentArray[$i]->dataType == 'datetime' || $contentArray[$i]->dataType == 'image')
+                array_push($mutatorsArray, $contentArray[$i]);
         }
+
+        $this->createModelController($modelName, $tableName, $mutatorsArray);
+        $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
 
         $this->insertIntoIndex($modelName, $tableName);
         $this->insertIntoWeb($tableName);
-        $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
-        $this->createModelController($modelName, $tableName, $dateTypesArray);
         $this->writeController($modelName, $tableName);
 
         $this->changeMigrations($tableName, $contentArray);
         $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
         $this->controllerStore($modelName, $tableName, $contentArray);
     }
-
-   
 
 }

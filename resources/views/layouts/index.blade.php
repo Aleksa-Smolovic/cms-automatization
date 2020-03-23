@@ -8,7 +8,6 @@
 
 		<!-- css start -->
 		<link rel="stylesheet" href="{{ asset('assets/vendor/bootstrap/css/bootstrap.min.css') }}">
-		<link rel="stylesheet" href="{{ asset('assets/maps/ol.css') }}">
 		<link rel="stylesheet" href="{{ asset('assets/vendor/fonts/circular-std/style.css') }}">
 		<link rel="stylesheet" href="{{ asset('assets/libs/css/style.css') }}">
 		<link rel="stylesheet" href="{{ asset('assets/vendor/fonts/fontawesome/css/fontawesome-all.css') }}">
@@ -153,7 +152,7 @@
 								</li>
 								<ul class="nav flex-column">
 
-            						<!-- MARKER -->							
+            						 <!-- MARKER -->							
 
 									<li class="nav-item">
 										<a class="nav-link" href="{{ route('admin.index') }}">
