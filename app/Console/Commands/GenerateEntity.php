@@ -82,7 +82,7 @@ class GenerateEntity extends Command
         $this->output->progressStart(10);
         $generator->generate($entity);
         for($i = 0; $i < 10; $i++){
-            sleep(0.25);
+            // sleep(0.25);
             $this->output->progressAdvance();
         }
         $this->output->progressFinish();

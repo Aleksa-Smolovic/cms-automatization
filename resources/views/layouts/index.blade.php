@@ -152,7 +152,7 @@
 								</li>
 								<ul class="nav flex-column">
 
-            						 <!-- MARKER -->							
+            						<!-- MARKER -->							
 
 									<li class="nav-item">
 										<a class="nav-link" href="{{ route('admin.index') }}">

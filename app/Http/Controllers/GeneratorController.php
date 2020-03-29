@@ -80,6 +80,7 @@ class GeneratorController extends Controller
     public function createModelController($modelName, $tableName, $mutatorsArray){
         Artisan::call('make:model ' . $modelName . ' -m');
         Artisan::call('make:controller ' . $this->capitalizeAttributes($tableName) . 'Controller');
+        Artisan::call('make:seeder ' . $modelName . 'Seeder');
 
         $file_path = "app/" . $modelName . '.php';
 
@@ -159,8 +160,7 @@ use App\\' . $modelName . ';';
 
     }
 
-    public function changeMigrations($tableName, $contentArray){
-
+    public function changeMigrations($modelName, $tableName, $contentArray){
         $filename = "database/migrations/*";
         foreach (glob($filename) as $filefound) {
             if(strpos($filefound, $tableName) !== false){
@@ -174,39 +174,52 @@ use App\\' . $modelName . ';';
 
         $marker = '$table->timestamps();';
         $attributesOutput = '';
+        $seederData = [];
 
         for($i = 0; $i < count($contentArray); $i++){
-            
+            $contentFieldName = $contentArray[$i]->name;
             switch($contentArray[$i]->dataType){
                 case 'image':
                     $dataType = 'text';
+                    $seederDataType = 'imageUrl($width = 640, $height = 480),';
                     break;
                 case 'text':
                     $dataType = 'text';
+                    $seederDataType = 'realText($maxNbChars = 200, $indexSize = 2),';
                     break;
                 case 'string':
                     $dataType = 'string';
+                    $seederDataType = 'sentence($nbWords = 3, $variableNbWords = true),';
                     break;
                 case 'boolean':
                     $dataType = 'boolean';
+                    $seederDataType = 'boolean($chanceOfGettingTrue = 50),';
                     break;
                 case 'integer':
                     $dataType = 'integer';
+                    $seederDataType = 'numberBetween($min = 50, $max = 450),';
                     break;
                 case 'date':
                     $dataType = 'date';
+                    $seederDataType = 'date($format = "d/m/Y", $max = "now"),';
                     break;
                 case 'datetime':
                     $dataType = 'datetime';
+                    $seederDataType = 'dateTime($max = "now", $timezone = null)->format("d/m/Y H:i:s"),';
                     break;
                 case 'double':
                     $dataType = 'double';
+                    $seederDataType = 'randomFloat($nbMaxDecimals = NULL, $min = 0, $max = NULL),';
                     break;
                 default:
                     //TO DO bolje rjesenje
                     $dataType = 'unsignedBigInteger';
+                    $seederDataType = 'numberBetween($min = 0, $max = 10),';
                     break;
             }
+
+            $seederData[$contentArray[$i]->name] = '
+                $faker->' . $seederDataType;
 
             $attributesOutput .= '$table->' . $dataType . '("' . $contentArray[$i]->name . '");
             ';
@@ -228,34 +241,8 @@ use App\\' . $modelName . ';';
         $str = file_get_contents($migrationFileName);
         $str = str_replace($marker, $attributesOutput, $str);
         file_put_contents($migrationFileName, $str);
-    }
 
-    public function automateV4(){
-        $tableName = 'Blogs';
-
-        $title = new TableContent('string', 'title', 'Naziv', 'text', null);
-        $text = new TableContent('text', 'text', 'Tekst', 'textarea', null);
-        $image = new TableContent('text', 'image', 'Slika', 'file', ['type' => 'image']);
-        $date = new TableContent('date', 'date_from', 'Datum od', 'date', null);
-        $timestamp = new TableContent('datetime', 'timestamp_from', 'Timestamp Od', 'datetime', null);
-        $double = new TableContent('double', 'amount', 'Vrijednost', 'number', null);
-
-        $contentArray = [$title, $text, $image, $date, $timestamp, $double];
-        $dateTypesArray = [];
-        for($i = 0; $i < count($contentArray); $i++){
-            if($contentArray[$i]->dataType == 'date' || $contentArray[$i]->dataType == 'datetime')
-                array_push($dateTypesArray, $contentArray[$i]);
-        }
-
-        $this->insertIntoIndex($tableName);
-        $this->insertIntoWeb($tableName);
-        $this->createIndexDeletedFiles($tableName);
-        $this->createModelController($tableName, $dateTypesArray);
-        $this->writeController($tableName);
-
-        $this->changeMigrations(strtolower($tableName), $contentArray);
-        $this->writeIndexBlade(strtolower($tableName), $contentArray);
-        $this->controllerStore($tableName, $contentArray);
+        $this->changeSeeder($modelName, $seederData);
     }
 
     public function capitalToDashString($str){
@@ -595,7 +582,7 @@ use App\\' . $modelName . ';';
             case 'image':
                     return '
             public function get' . $this->capitalizeAttributes($tableContentInsance->name) . 'Attribute($value){
-                return asset($value);
+                return strpos($value, "http") === false ? asset($value) : $value;
             }';
                 break;
         }
@@ -627,9 +614,42 @@ use App\\' . $modelName . ';';
         $this->insertIntoWeb($tableName);
         $this->writeController($modelName, $tableName);
 
-        $this->changeMigrations($tableName, $contentArray);
+        $this->changeMigrations($modelName, $tableName, $contentArray);
         $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
         $this->controllerStore($modelName, $tableName, $contentArray);
+    }
+
+    public function changeSeeder($modelName, $seederData){
+        $folderPath = 'database/seeds/';
+        $seederFileName =  $folderPath . $modelName . 'Seeder.php';
+        $str = file_get_contents($seederFileName);
+        if($str === false || empty($str)) 
+            exit($seederFileName);
+        $seedOutput =
+        '$faker = Faker\Factory::create();
+            for($i = 0; $i < 20; $i++) {
+                App\\' . $modelName . '::create([
+                ';
+        foreach ($seederData as $key => $value) {
+            $seedOutput .= '
+                "' . $key . '" => ' . $value;
+        }
+        $seedOutput .= '
+            "create_user_id" => $faker->numberBetween($min = 1, $max = 10),
+            "created_at" => $faker->dateTime($max = \'now\', $timezone = null)
+            ]);
+        }';
+        $marker = '//';
+        $str = str_replace($marker, $seedOutput, $str);
+        file_put_contents($seederFileName, $str);
+
+        $dbSeederFile =  $folderPath . 'DatabaseSeeder.php';
+        $dbSeederText = file_get_contents($dbSeederFile);
+        $seederInitialization = '$this->call(' . $modelName . 'Seeder::class);
+            ';
+        $initializationPos = strpos($dbSeederText, '}');
+        $dbSeederOutput = substr_replace($dbSeederText, $seederInitialization, $initializationPos - 1, 0);
+        file_put_contents($dbSeederFile, $dbSeederOutput);
     }
 
 }
