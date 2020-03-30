@@ -94,21 +94,8 @@ class GenerateEntity extends Command
         $fieldDisplayName = $state->ask('Field display name');
         $fieldDataType = $state->choice('Field data type', $this->dataTypes, $this->dataTypes[0]);
         $fieldInputType = $state->choice('Field input type', $this->inputTypes, $this->inputTypes[0]);
-        $fieldAdditionalData = $state->choice('Field additional data', ['No', 'Image'], 'No');
-        return new TableContent($fieldDataType, $fieldName, $fieldDisplayName, $fieldInputType, $this->getAdditionalData($fieldAdditionalData));
-    }
-
-    function getAdditionalData($additionalData){
-        $returnData;
-        switch($additionalData){
-            case 'No':
-                $returnData = null;
-            break;
-            case 'Image':
-                $returnData['type'] = 'image';
-            break;
-        }
-        return $returnData;
+        $fieldTableVisibility = $this->confirm('Display field in the table?');
+        return new TableContent($fieldDataType, $fieldName, $fieldDisplayName, $fieldInputType, $fieldTableVisibility);
     }
 
 }

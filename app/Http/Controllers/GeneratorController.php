@@ -111,7 +111,7 @@ use App\Traits\FileHandling;';
         file_put_contents($file_path, $str);
     }
 
-    public function writeController($modelName, $tableName){
+    public function writeController($modelName, $tableName, $contentArray){
         $controllerName = $this->capitalizeAttributes($tableName);
         $file_path = "app/Http/Controllers/" . $controllerName . 'Controller.php';
         $str = file_get_contents($file_path);
@@ -121,13 +121,17 @@ use App\Traits\FileHandling;';
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\\' . $modelName . ';';
-        
+
         $str = file_get_contents($file_path);
         $str = str_replace($includesMarker, $includes, $str);
 
+        $visibleFields = "'id'";
+        foreach($contentArray as $column) if($column->isVisible)
+            $visibleFields .= ", '" . $column->name . "'";
+        
         $content = '
     public function index(){
-        $objects = ' . $modelName . '::orderBy("id", "DESC")->get();
+        $objects = ' . $modelName . '::select(' . $visibleFields . ')->orderBy("id", "DESC")->get();
         return view("admin.' . str_replace("_","-", $tableName) . '.index",  compact("objects"));
     }
 
@@ -145,7 +149,7 @@ use App\\' . $modelName . ';';
     
     public function deleted()
 	{
-        return view("admin.' . str_replace("_","-", $tableName) . '.deleted")->withObjects( ' . $modelName . '::onlyTrashed()->get());
+        return view("admin.' . str_replace("_","-", $tableName) . '.deleted")->withObjects( ' . $modelName . '::select(' . $visibleFields . ')->onlyTrashed()->get());
     }
     
     public function restore($id){
@@ -299,7 +303,7 @@ use App\\' . $modelName . ';';
             ';
                 break;    
             case 'file':
-                if($tableContentInsance->additionalData['type'] == 'image'){
+                if($tableContentInsance->dataType == 'image'){
                     $imageHolder = '
                 <div class="row">
                     <div class="col-12">
@@ -336,7 +340,7 @@ use App\\' . $modelName . ';';
     }
 
     public function getTableContent(TableContent $tableContent){
-        switch($tableContent->additionalData['type']){
+        switch($tableContent->dataType){
             case 'image':
                 return '<td class="text-center">
                             <img class="rounded" src="{{ $object->' . $tableContent->name . '}}" width="60">
@@ -357,20 +361,22 @@ use App\\' . $modelName . ';';
 
         $editBtnData .=  $tableName . '/{{$object->id}}';
 
-        for($i = 0; $i < count($contentArray); $i++){
-            $tableHeaders .= '<th class="text-center">' . $contentArray[$i]->placeholder . '</th>
-            ';
-            $tableContent .= $this->getTableContent($contentArray[$i]);
-            if($contentArray[$i]->inputType == 'file' && $contentArray[$i]->additionalData['type'] == 'image'){
-                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "Holder').attr({ 'src': " . $this->ajaxReturnData .".". $contentArray[$i]->name . " });
+        foreach($contentArray as $column){
+            if ($column->isVisible){
+                $tableHeaders .= '<th class="text-center">' . $column->placeholder . '</th>
+                ';
+                $tableContent .= $this->getTableContent($column);
+            }
+            if($column->inputType == 'file' && $column->dataType == 'image'){
+                $modalOpenValue .= 	"$('#" . $column->name . "Holder').attr({ 'src': " . $this->ajaxReturnData .".". $column->name . " });
                 ";
-                $modalCloseValue = 'var $image = $("#' . $contentArray[$i]->name . 'Holder");
-            $("#' . $contentArray[$i]->name . 'Holder").removeAttr("src").replaceWith($image.clone());';
+                $modalCloseValue = 'var $image = $("#' . $column->name . 'Holder");
+            $("#' . $column->name . 'Holder").removeAttr("src").replaceWith($image.clone());';
             }else{
-                $modalOpenValue .= 	"$('#" . $contentArray[$i]->name . "').val(" . $this->ajaxReturnData .".". $contentArray[$i]->name . " );
+                $modalOpenValue .= 	"$('#" . $column->name . "').val(" . $this->ajaxReturnData .".". $column->name . " );
                 ";
             }
-            $htmlInputs .= $this->getHtmlInputs($contentArray[$i]);
+            $htmlInputs .= $this->getHtmlInputs($column);
         }
 
         $indexContent = str_replace("<!-- Marker Table Heading -->", $tableHeaders, $indexContent);
@@ -451,7 +457,7 @@ use App\\' . $modelName . ';';
             '$tableContentInsance->name' => 'required|date_format:d/m/Y H:i:s',";
                 break;    
             case 'file':
-                if($tableContentInsance->additionalData['type'] == 'image'){
+                if($tableContentInsance->dataType == 'image'){
                     return "
             '$tableContentInsance->name' => 'required|max:5000|mimes:jpeg,png,jpg,gif,svg',";
                 }
@@ -485,7 +491,7 @@ use App\\' . $modelName . ';';
             '$tableContentInsance->name.date_format' => '$tableContentInsance->placeholder mora biti dormata d/m/y h:i:s!',";
                 break;    
             case 'file':
-                if($tableContentInsance->additionalData['type'] == 'image'){
+                if($tableContentInsance->dataType == 'image'){
                     return "
             '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
             '$tableContentInsance->name.max' => 'Maksimalna veličina " . strtolower($tableContentInsance->placeholder) . " je 5mb!',
@@ -612,7 +618,7 @@ use App\\' . $modelName . ';';
 
         $this->insertIntoIndex($modelName, $tableName);
         $this->insertIntoWeb($tableName);
-        $this->writeController($modelName, $tableName);
+        $this->writeController($modelName, $tableName, $contentArray);
 
         $this->changeMigrations($modelName, $tableName, $contentArray);
         $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);

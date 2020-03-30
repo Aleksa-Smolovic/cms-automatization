@@ -11,13 +11,14 @@ class TableContent extends Model
     public $name;
     public $placeholder;
     public $inputType;
-    public $additionalData = array();
+    public $isVisible;
+    // public $additionalData = array();
 
-    public function __construct($dataType, $name, $placeholder, $inputType, $additionalData){
+    public function __construct($dataType, $name, $placeholder, $inputType, $isVisible){
         $this->dataType = $dataType;
         $this->name = $name;
         $this->placeholder = $placeholder;
         $this->inputType = $inputType;
-        $this->additionalData = $additionalData;
+        $this->isVisible = $isVisible;
     }
 }
