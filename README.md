@@ -9,19 +9,46 @@ Run:
 ```
 php artisan entity:generate
 ```
+
 Don't delete necessery markers within the files
 
 ## Limitations
 
-- Foreign keys not supproted
-- Process required to use as is, no error handling
 - Limited datatypes, front and database
+- CMS based, all entities belong to user
 
 ## Perks
 
 - Date, datetime format
 - Image and file transfer
 - Default validation for supported datatypes
+
+## Example:
+
+Basic:
+
+    Model name: News
+    Table name: news
+
+    Table field name: title
+    or
+    Table field name: cover_image
+    Field display name: Cover image
+
+    data type -> database data type (image is saved as text)
+    input type -> front (html) input type
+
+    Display field -> display field on front
+
+Relationships:
+
+    Other entity model name: Championship
+    Foreign key name: championship_id
+    Foreign key display name: Lol championship
+
+    Other entity display field -> field name of other entity to display (default id)
+    
+    Entity must exist in order to create relationship with it
 
 ## Example for multiple tables (not tested with new version)
 

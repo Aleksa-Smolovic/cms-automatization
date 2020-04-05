@@ -504,6 +504,11 @@
 		<script src="{{ asset('assets/vendor/slimscroll/jquery.slimscroll.js') }}"></script>
 		<script src="{{ asset('assets/vendor/multi-select/js/jquery.multi-select.js') }}"></script>
 		<script src="{{ asset('assets/libs/js/main-js.js') }}"></script>
+
+		<script src="{{ asset('admin_css_js/ajaxSubmitForm.js') }}"></script>
+		<script src="{{ asset('admin_css_js/delete.js') }}"></script>
+		<script src="{{ asset('admin_css_js/ajaxFetch.js') }}"></script>
+
 		<script src="{{ asset('https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js') }}"></script>
 		<script src="{{ asset('assets/vendor/datatables/js/dataTables.bootstrap4.min.js') }}"></script>
 		<script src="{{ asset('https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js')}}"></script>
@@ -524,10 +529,6 @@
 		<!-- js end -->
 
 		@yield('js')
-
-		<script src="{{ asset('admin_css_js/ajaxSubmitForm.js') }}"></script>
-		<script src="{{ asset('admin_css_js/delete.js') }}"></script>
-		<script src="{{ asset('admin_css_js/ajaxFetch.js') }}"></script>
 
 	</body>
 </html>

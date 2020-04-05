@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Artisan;
 use App\TableContent;
+use App\ForeignKeyInstance;
 
 class GeneratorController extends Controller
 {
@@ -14,7 +15,6 @@ class GeneratorController extends Controller
     //TO DO Error Handling
     //TO DO _ -> - za spaceove
     //TO DO upisati u jedan fajl? writeController   
-    //TO DO automateV4 -> da li funkcije da zovu jedna drugu?
 
     private $ajaxReturnData = 'returndata';
 
@@ -41,8 +41,8 @@ class GeneratorController extends Controller
 
         $item = "
     Route::get('/admin/" . $tableName . "', '" . $controllerName . "Controller@index')->name('admin/" . $tableName . "');
-    Route::get('/admin/" . $tableName . "/{id}', '" . $controllerName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
     Route::get('/admin/" . $tableName . "/deleted', '" . $controllerName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
+    Route::get('/admin/" . $tableName . "/{id}', '" . $controllerName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
     Route::delete('/admin/" . $tableName . "/delete/{id}', '" . $controllerName . "Controller@destroy')->name('" . $tableName . "/delete');
     Route::post('/admin/" . $tableName . "/restore/{id}', '" . $controllerName . "Controller@restore')->name('" . $tableName . "/restore');
     Route::post('/admin/" . $tableName . "/store', '" . $controllerName . "Controller@store')->name('" . $tableName . "/store');
@@ -77,7 +77,7 @@ class GeneratorController extends Controller
         fclose($deletedFile);
     }
 
-    public function createModelController($modelName, $tableName, $mutatorsArray){
+    public function createModelController($modelName, $tableName, $contentArray){
         Artisan::call('make:model ' . $modelName . ' -m');
         Artisan::call('make:controller ' . $this->capitalizeAttributes($tableName) . 'Controller');
         Artisan::call('make:seeder ' . $modelName . 'Seeder');
@@ -94,9 +94,13 @@ use App\Traits\FileHandling;';
         $str = file_get_contents($file_path);
         $str = str_replace($includesMarker, $includes, $str);
 
+        $dataTypeMutators = ['date', 'datetime', 'image', 'unsignedBigInteger'];
         $mutators = '';
-        for($i = 0; $i < count($mutatorsArray); $i++)
-            $mutators .= $this->createMutators($mutatorsArray[$i]);
+
+        foreach($contentArray as $contentInstance){
+            if(in_array($contentInstance->dataType, $dataTypeMutators))
+                $mutators .= $this->createMutators($contentInstance);
+        }
 
         $content = '
     use SoftDeletes, FileHandling;
@@ -122,17 +126,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\\' . $modelName . ';';
 
+        $relationshipObjects = $foreignKeySelect = '';
+
+        foreach($contentArray as $contentInstance) if($contentInstance->foreignKey){
+            $foreignModelName = $contentInstance->foreignKey->modelName;
+            $displayField = $contentInstance->foreignKey->displayField;
+            $displayField = $displayField == 'id' ? "'id'" : "'id', '" . $displayField . "'";
+            $includes .= '
+            use App\\' . $foreignModelName . ';';
+            $foreignKeySelect .= '
+            $' . strtolower($foreignModelName) . ' = ' . $foreignModelName . '::select(' . $displayField . ')->orderBy("id", "DESC")->get();';
+            $relationshipObjects .= ', "' . strtolower($foreignModelName) . '"';
+        }
+
         $str = file_get_contents($file_path);
         $str = str_replace($includesMarker, $includes, $str);
 
         $visibleFields = "'id'";
-        foreach($contentArray as $column) if($column->isVisible)
-            $visibleFields .= ", '" . $column->name . "'";
+        foreach($contentArray as $contentInstance) if($contentInstance->isVisible)
+            $visibleFields .= ", '" . $contentInstance->name . "'";
         
         $content = '
     public function index(){
         $objects = ' . $modelName . '::select(' . $visibleFields . ')->orderBy("id", "DESC")->get();
-        return view("admin.' . str_replace("_","-", $tableName) . '.index",  compact("objects"));
+        ' . $foreignKeySelect . '
+        return view("admin.' . str_replace("_","-", $tableName) . '.index",  compact("objects"' . $relationshipObjects . ' ));
     }
 
     public function getOne($id){
@@ -161,7 +179,6 @@ use App\\' . $modelName . ';';
 
         $str = str_replace('//', $content, $str);
         file_put_contents($file_path, $str);
-
     }
 
     public function changeMigrations($modelName, $tableName, $contentArray){
@@ -180,9 +197,9 @@ use App\\' . $modelName . ';';
         $attributesOutput = '';
         $seederData = [];
 
-        for($i = 0; $i < count($contentArray); $i++){
-            $contentFieldName = $contentArray[$i]->name;
-            switch($contentArray[$i]->dataType){
+        foreach($contentArray as $contentInstance){
+            $contentFieldName = $contentInstance->name;
+            switch($contentInstance->dataType){
                 case 'image':
                     $dataType = 'text';
                     $seederDataType = 'imageUrl($width = 640, $height = 480),';
@@ -215,6 +232,10 @@ use App\\' . $modelName . ';';
                     $dataType = 'double';
                     $seederDataType = 'randomFloat($nbMaxDecimals = NULL, $min = 0, $max = NULL),';
                     break;
+                case 'unsignedBigInteger':
+                    $dataType = 'unsignedBigInteger';
+                    $seederDataType = 'numberBetween($min = 1, $max = 10),';
+                    break;    
                 default:
                     //TO DO bolje rjesenje
                     $dataType = 'unsignedBigInteger';
@@ -222,14 +243,14 @@ use App\\' . $modelName . ';';
                     break;
             }
 
-            $seederData[$contentArray[$i]->name] = '
+            $seederData[$contentInstance->name] = '
                 $faker->' . $seederDataType;
 
-            $attributesOutput .= '$table->' . $dataType . '("' . $contentArray[$i]->name . '");
+            $attributesOutput .= '$table->' . $dataType . '("' . $contentInstance->name . '");
             ';
 
             if($dataType == 'unsignedBigInteger') 
-                $attributesOutput .= '$table->foreign("' .  $contentArray[$i]->name . '")->references("id")->on("' .  $contentArray[$i]->dataType . '");
+                $attributesOutput .= '$table->foreign("' .  $contentInstance->name . '")->references("id")->on("' .  $contentInstance->foreignKey->tableName . '");
                     ';
         }
 
@@ -253,16 +274,18 @@ use App\\' . $modelName . ';';
         return strtolower(preg_replace('~(?=[A-Z])(?!\A)~', '_', $str));
     }
 
-    public function getHtmlInputs(TableContent $tableContentInsance){
-
-        switch($tableContentInsance->inputType){
+    public function getHtmlInputs(TableContent $contentInstance){
+        $inputType = $contentInstance->inputType;
+        $inputName = $contentInstance->name;
+        $inputPlaceholder = $contentInstance->placeholder;
+        switch($inputType){
             case 'textarea':
                 return '
                     <div class="row">
                         <div class="col-12"> 
                             <div class="form-group">
-                                <label class="col-form-label" for="' . $tableContentInsance->name . '">' . $tableContentInsance->placeholder . ' *</label>
-                                <textarea class="form-control" id="' . $tableContentInsance->name . '" name="' . $tableContentInsance->name . '" placeholder="' . $tableContentInsance->placeholder . '"></textarea>
+                                <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
+                                <textarea class="form-control" id="' . $inputName . '" name="' . $inputName . '" placeholder="' . $inputPlaceholder . '"></textarea>
                             </div>
                         </div>
                     </div>
@@ -273,9 +296,9 @@ use App\\' . $modelName . ';';
                 <div class="row">
                     <div class="col-12"> 
                         <div class="form-group">
-                            <label class="col-form-label" for="' . $tableContentInsance->name . '">' . $tableContentInsance->placeholder . ' *</label>
+                            <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
                             <div class="input-group date" id="datetimepicker4" data-target-input="nearest">
-                                <input name="' . $tableContentInsance->name . '" id="' . $tableContentInsance->name . '" type="text" class="form-control datetimepicker-input" data-target="#datetimepicker4" />
+                                <input name="' . $inputName . '" id="' . $inputName . '" type="text" class="form-control datetimepicker-input" data-target="#datetimepicker4" />
                                 <div class="input-group-append" data-target="#datetimepicker4" data-toggle="datetimepicker">
                                     <div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
                                 </div>
@@ -290,9 +313,9 @@ use App\\' . $modelName . ';';
                 <div class="row">
                     <div class="col-12"> 
                         <div class="form-group">
-                            <label class="col-form-label" for="' . $tableContentInsance->name . '">' . $tableContentInsance->placeholder . ' *</label>
+                            <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
                             <div class="input-group date" id="datetimepicker1" data-target-input="nearest">
-                                <input id="' . $tableContentInsance->name . '" type="text" name="' . $tableContentInsance->name . '" class="form-control datetimepicker-input" data-target="#datetimepicker1" />
+                                <input id="' . $inputName . '" type="text" name="' . $inputName . '" class="form-control datetimepicker-input" data-target="#datetimepicker1" />
                                 <div class="input-group-append" data-target="#datetimepicker1" data-toggle="datetimepicker">
                                     <div class="input-group-text"><i class="far fa-calendar-alt"></i></div>
                                 </div>
@@ -303,11 +326,11 @@ use App\\' . $modelName . ';';
             ';
                 break;    
             case 'file':
-                if($tableContentInsance->dataType == 'image'){
+                if($contentInstance->dataType == 'image'){
                     $imageHolder = '
                 <div class="row">
                     <div class="col-12">
-                        <img width="100%" style="max-height:25%" id="' . $tableContentInsance->name . 'Holder"/>
+                        <img width="100%" style="max-height:25%" id="' . $inputName . 'Holder"/>
                     </div>
                 </div>
                 ';
@@ -316,10 +339,29 @@ use App\\' . $modelName . ';';
                     <div class="row">
 						<div class="col-12"> 
 							<div class="form-group">
-								<label class="col-form-label" for="' . $tableContentInsance->name . '">' . $tableContentInsance->placeholder . ' *</label>
-								<input type="file" id="' . $tableContentInsance->name . '" class="form-control" name="' . $tableContentInsance->name . '"/>
+								<label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
+								<input type="file" id="' . $inputName . '" class="form-control" name="' . $inputName . '"/>
 							</div>
 						</div>
+                    </div>
+                    ';
+                break;
+            case 'foreign_key':
+                $modelName = $contentInstance->foreignKey->modelName;
+                $displayField = $contentInstance->foreignKey->displayField;
+                return '
+                    <div class="row">
+                        <div class="col-12"> 
+                            <div class="form-group">
+                                <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
+                                <select class="form-control" id="' . $inputName . '" name="' . $inputName . '">
+                                    <option selected disabled>Odaberite</option>
+                                    @foreach($' . strtolower($modelName) . ' as $single' . $modelName . ')
+                                        <option value="{{$single' . $modelName . '->id}}">{{$single' . $modelName . '->' . $displayField . '}}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
                     ';
                 break;
@@ -328,8 +370,8 @@ use App\\' . $modelName . ';';
                 <div class="row">
                     <div class="col-12"> 
                         <div class="form-group">
-                            <label class="col-form-label" for="' . $tableContentInsance->name . '">' . $tableContentInsance->placeholder . ' *</label>
-                            <input id="' . $tableContentInsance->name . '" class="form-control" type="' . $tableContentInsance->inputType . '" placeholder="' . $tableContentInsance->placeholder . '" name="' . $tableContentInsance->name . '">
+                            <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
+                            <input id="' . $inputName . '" class="form-control" type="' . $inputType . '" placeholder="' . $inputPlaceholder . '" name="' . $inputName . '">
                         </div>
                     </div>
                 </div>
@@ -408,13 +450,12 @@ use App\\' . $modelName . ';';
 
         $additionalHandling = '';
 
-        for($i = 0; $i < count($contentArray); $i++){
-            $declaringValidation .= $this->declareValidation($contentArray[$i]);
-            $validationAlerts .= $this->validationAlerts($contentArray[$i]);
-            if($contentArray[$i]->inputType == 'file'){
+        foreach($contentArray as $contentInstance){
+            $declaringValidation .= $this->declareValidation($contentInstance);
+            $validationAlerts .= $this->validationAlerts($contentInstance);
+            if($contentInstance->inputType == 'file')
                 $additionalHandling .= '
-            $data["' . $contentArray[$i]->name . '"] = ' . $modelName . '::storeFile($data["' . $contentArray[$i]->name . '"], "' . $tableName . '");';
-            }     
+            $data["' . $contentInstance->name . '"] = ' . $modelName . '::storeFile($data["' . $contentInstance->name . '"], "' . $tableName . '");';
         }
         
         $validationAlerts .= '
@@ -464,6 +505,10 @@ use App\\' . $modelName . ';';
                 return "
             '$tableContentInsance->name' => 'required|max:5000|mimes:pdf,docx',";
                 break;
+            case 'foreign_key':
+                return "
+            '$tableContentInsance->name' => 'required',";
+                break;
             default:
                 return "
             '$tableContentInsance->name' => 'required|max:191',";
@@ -472,40 +517,45 @@ use App\\' . $modelName . ';';
 
     }
 
-    public function validationAlerts(TableContent $tableContentInsance){
-
-        switch($tableContentInsance->inputType){
+    public function validationAlerts(TableContent $contentInstance){
+        $inputName = $contentInstance->name;
+        $inputPlaceholder = $contentInstance->placeholder;
+        switch($contentInstance->inputType){
             case 'textarea':
                 return "
-            '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.max' => '$tableContentInsance->placeholder može sadržati maksimum 10000 karakera!',";
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.max' => '$inputPlaceholder može sadržati maksimum 10000 karakera!',";
                 break;
             case 'date':
                 return "
-            '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.date_format' => '$tableContentInsance->placeholder mora biti dormata d/m/y!',";
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.date_format' => '$inputPlaceholder mora biti dormata d/m/y!',";
                 break;
             case 'datetime':
                 return "
-            '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.date_format' => '$tableContentInsance->placeholder mora biti dormata d/m/y h:i:s!',";
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.date_format' => '$inputPlaceholder mora biti dormata d/m/y h:i:s!',";
                 break;    
             case 'file':
-                if($tableContentInsance->dataType == 'image'){
+                if($contentInstance->dataType == 'image'){
                     return "
-            '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.max' => 'Maksimalna veličina " . strtolower($tableContentInsance->placeholder) . " je 5mb!',
-            '$tableContentInsance->name.mimes' => '$tableContentInsance->placeholder može biti formata: jpeg,png,jpg,gif,svg!',";
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.max' => 'Maksimalna veličina " . strtolower($inputPlaceholder) . " je 5mb!',
+            '$inputName.mimes' => '$inputPlaceholder može biti formata: jpeg,png,jpg,gif,svg!',";
                 }
                 return "
-            '$tableContentInsance->name.required' => 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.max' => 'Maksimalna veličina " . strtolower($tableContentInsance->placeholder) . " je 5mb!',
-            '$tableContentInsance->name.mimes' => '$tableContentInsance->placeholder može biti formata: pdf,docx!',";
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.max' => 'Maksimalna veličina " . strtolower($inputPlaceholder) . " je 5mb!',
+            '$inputName.mimes' => '$inputPlaceholder može biti formata: pdf,docx!',";
                 break;
+            case 'foreign_key':
+                return "
+            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',";
+                break;    
             default:
                 return "
-            '$tableContentInsance->name.required'=> 'Morate unijeti " . strtolower($tableContentInsance->placeholder) . "!',
-            '$tableContentInsance->name.max'=> '$tableContentInsance->placeholder može sadržati najviše 191 karaktera!',";
+            '$inputName.required'=> 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
+            '$inputName.max'=> '$inputPlaceholder može sadržati najviše 191 karaktera!',";
                 break;
         }
 
@@ -591,6 +641,12 @@ use App\\' . $modelName . ';';
                 return strpos($value, "http") === false ? asset($value) : $value;
             }';
                 break;
+            case 'unsignedBigInteger':
+                    return '
+            public function ' . strtolower($tableContentInsance->foreignKey->modelName) . '(){
+                return $this->belongsTo(' . $tableContentInsance->foreignKey->modelName . '::class);
+            }';
+                break;
         }
     }
 
@@ -605,15 +661,9 @@ use App\\' . $modelName . ';';
     public function generate($table){
         $tableName = strtolower($table['table_name']);
         $modelName = $table['model_name'];
-
-        $mutatorsArray = [];
         $contentArray = $table['attributes'];
-        for($i = 0; $i < count($contentArray); $i++){
-            if($contentArray[$i]->dataType == 'date' || $contentArray[$i]->dataType == 'datetime' || $contentArray[$i]->dataType == 'image')
-                array_push($mutatorsArray, $contentArray[$i]);
-        }
 
-        $this->createModelController($modelName, $tableName, $mutatorsArray);
+        $this->createModelController($modelName, $tableName, $contentArray);
         $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
 
         $this->insertIntoIndex($modelName, $tableName);

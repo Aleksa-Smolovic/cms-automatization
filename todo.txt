@@ -1,4 +1,6 @@
-1. remove additionalData !important
+1. remove additionalData !important - DONE
 2. errors?
-3. relationship suppport
-4. check if /r, /n can replace new line
+3. relationship suppport - DONE
+4. check if /r, /n can replace new line, formatting?
+5. seeders - DONE
+6. refactor users

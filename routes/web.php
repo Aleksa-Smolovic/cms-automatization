@@ -6,8 +6,6 @@
 Route::get('/', 'WebsiteController@index');
 Route::get('/test', 'AutomatizationInputController@automate');
 
-// Route::get('/users/{user}', 'UsersController@edit')->name('users.edit');
-
 /**
  * Admin Panel routes
  */
