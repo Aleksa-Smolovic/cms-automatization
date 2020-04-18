@@ -18,9 +18,11 @@
 		<link rel="stylesheet" href="{{ asset('assets/vendor/datepicker/tempusdominus-bootstrap-4.css') }}">
 		<!-- css end -->
 
+		<link rel="shortcut icon" href="{{ asset('img/favicon-32x32.png') }}" />
+
 		<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 
-		<title>@yield('title', 'Concept - Bootstrap 4 Admin Dashboard Template')</title>
+		<title>@yield('title', 'Administracija')</title>
 	</head>
 
 	<body>
@@ -160,8 +162,8 @@
 										</a>
 									</li>
 									<li class="nav-item">
-										<a class="nav-link" href="{{ route('users.index') }}">
-											<i class="fa fa-fw fa-user-circle"></i>Users
+										<a class="nav-link" href="{{ route('users') }}">
+											<i class="fa fa-fw fa-user-circle"></i>Korisnici
 										</a>
 									</li>
 									<li class="nav-item">
@@ -170,32 +172,7 @@
 										</a>
 									</li>
 								</ul>
-								<!-- <li class="nav-item">
-									<a class="nav-link {{-- active --}}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-0" aria-controls="submenu-0"><i class="fa fa-fw fa-user-circle"></i>Users <span class="badge badge-success">6</span></a>
-									<div id="submenu-0" class="collapse submenu" style="">
-										<ul class="nav flex-column">
-											<li class="nav-item">
-												<a class="nav-link" href="{{ route('users.index') }}">All Users</a>
-											</li>
-											<li class="nav-item">
-												<a class="nav-link" href="{{ route('users.create') }}">Add User</a>
-											</li>
-										</ul>
-									</div>
-								</li>
-								<li class="nav-item">
-									<a class="nav-link {{-- active --}}" href="#" data-toggle="collapse" aria-expanded="false" data-target="#submenu-11" aria-controls="submenu-11"><i class="fa fa-fw fa-user-circle"></i>Roles <span class="badge badge-success">6</span></a>
-									<div id="submenu-11" class="collapse submenu" style="">
-										<ul class="nav flex-column">
-											<li class="nav-item">
-												<a class="nav-link" href="{{ route('roles.index') }}">All Roles</a>
-											</li>
-											<li class="nav-item">
-												<a class="nav-link" href="{{ route('roles.create') }}">Add Role</a>
-											</li>
-										</ul>
-									</div>
-								</li> -->
+								
 								<li class="nav-divider">
 									Menu
 								</li>

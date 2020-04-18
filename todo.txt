@@ -3,4 +3,10 @@
 3. relationship suppport - DONE
 4. check if /r, /n can replace new line, formatting?
 5. seeders - DONE
-6. refactor users
+6. refactor users - DONE
+7. Support for nullable fields
+8. Optimaze controller code?
+9. Optimaze routes
+10. Prefix admin
+11. Form requests Support
+12. Repository/Service Layer?

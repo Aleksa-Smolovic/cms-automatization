@@ -49,7 +49,8 @@
 												<form class="deleteForm" action="{{ route('tableNameMarker/delete', $object->id) }}" method="POST">
 													@method('DELETE')
 													@csrf
-													<button type="button" class="delBtn btn btn-sm btn-danger" >Obriši</button>												</form>
+													<button type="button" class="delBtn btn btn-sm btn-danger">Obriši</button>
+												</form>
 											</td>
 										</tr>
 									@endforeach
@@ -70,7 +71,6 @@
 
 <script>
 var route = "tableNameMarker/store";
-var clickable = true;
 
 $('#myModal').on('hidden.bs.modal', function () {
 	$(".submitForm")[0].reset();

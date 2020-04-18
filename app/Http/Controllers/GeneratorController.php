@@ -471,7 +471,8 @@ use App\\' . $modelName . ';';
 
         ' . $modelName . '::create($data);
 
-        return "Done";
+
+        return response()->json(["success" => "success"], 200);
          
     }
     //';
@@ -602,7 +603,7 @@ use App\\' . $modelName . ';';
         $object->fill($data);
         $object->save();
        
-        return "Done";
+        return response()->json(["success" => "success"], 200);
          
     }';
 

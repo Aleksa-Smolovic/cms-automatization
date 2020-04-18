@@ -11,16 +11,14 @@ $(".submitForm").submit(function(event){
         cache: false,
         contentType: false,
         processData: false,
-        success: function (returndata) {
+        success: function (returndata, statusText, xhr) {
           $(".formSpinner").hide();
           $(".submitFormBtn").attr("disabled", false);
-          if(returndata == 'Done'){
+          if(xhr.status == 200 &&  statusText == 'success'){
             swal("Poooof!", "Uspješno ste sačuvali podatke!", "success").then((value) => {
               $("form")[0].reset();
               window.location.reload(true); 
             });
-          }else{
-            swal("Greška!", returndata, "error");
           }
         },
         error: function (returndata) {
