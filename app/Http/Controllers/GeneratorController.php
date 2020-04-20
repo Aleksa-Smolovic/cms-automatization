@@ -9,7 +9,7 @@ use App\ForeignKeyInstance;
 
 class GeneratorController extends Controller
 {
-    //include: Class -> TableContent, Example resource folder, Admin css/js,
+    //include: Class -> TableContent, Example resource folder, Admin css/js, templates
     //Tags in web and index.blade(nav), FileHandle Trait, GeneratorController, AutomatizationInputController
 
     //TO DO Error Handling
@@ -28,11 +28,11 @@ class GeneratorController extends Controller
             </li>
             <!-- MARKER -->";
 
-        $file_path = "resources/views/layouts/index.blade.php";
+        $filePath = "resources/views/layouts/index.blade.php";
 
-        $str = file_get_contents($file_path);
+        $str = file_get_contents($filePath);
         $str = str_replace("<!-- MARKER -->", $item, $str);
-        file_put_contents($file_path, $str);
+        file_put_contents($filePath, $str);
     }
 
     public function insertIntoWeb($tableName){
@@ -49,11 +49,11 @@ class GeneratorController extends Controller
     Route::post('/admin/" . $tableName . "/edit', '" . $controllerName . "Controller@edit')->name('" . $tableName . "/edit');
     //->MARKER";
 
-        $file_path = "routes/web.php";
+        $filePath = "routes/web.php";
 
-        $str = file_get_contents($file_path);
+        $str = file_get_contents($filePath);
         $str = str_replace("//->MARKER", $item, $str);
-        file_put_contents($file_path, $str);
+        file_put_contents($filePath, $str);
     }
 
     //TO DO vidjeti moze li create or replace na file ili folder?
@@ -77,56 +77,28 @@ class GeneratorController extends Controller
         fclose($deletedFile);
     }
 
-    public function createModelController($modelName, $tableName, $contentArray){
-        Artisan::call('make:model ' . $modelName . ' -m');
-        Artisan::call('make:controller ' . $this->capitalizeAttributes($tableName) . 'Controller');
-        Artisan::call('make:seeder ' . $modelName . 'Seeder');
-
-        $file_path = "app/" . $modelName . '.php';
-
-        $includesMarker = 'use Illuminate\Database\Eloquent\Model;';
-
-        $includes = $includesMarker . '
-use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Carbon;
-use App\Traits\FileHandling;';
-
-        $str = file_get_contents($file_path);
-        $str = str_replace($includesMarker, $includes, $str);
+    public function writeModel($modelName, $tableName, $contentArray){
+        $templatePath = 'templates/ModelTemplate';
+        $template = file_get_contents($templatePath);
+        $filePath = "app/" . $modelName . '.php';
 
         $dataTypeMutators = ['date', 'datetime', 'image', 'unsignedBigInteger'];
         $mutators = '';
+        foreach($contentArray as $contentInstance) if(in_array($contentInstance->dataType, $dataTypeMutators))
+            $mutators .= $this->createMutators($contentInstance, $modelName, $tableName);
 
-        foreach($contentArray as $contentInstance){
-            if(in_array($contentInstance->dataType, $dataTypeMutators))
-                $mutators .= $this->createMutators($contentInstance);
-        }
-
-        $content = '
-    use SoftDeletes, FileHandling;
-
-    protected $table = "' . $tableName . '";
-    
-    public $primaryKey = "id";
-    protected $guarded = [];
-    ' . $mutators;
-
-        $str = str_replace('//', $content, $str);
-        file_put_contents($file_path, $str);
+        $markers = ['||model||', '||table||', '||mutators||'];
+        $realData = [$modelName, $tableName, $mutators];
+        $template =  str_replace($markers, $realData, $template);
+        file_put_contents($filePath, $template);
     }
 
     public function writeController($modelName, $tableName, $contentArray){
-        $controllerName = $this->capitalizeAttributes($tableName);
-        $file_path = "app/Http/Controllers/" . $controllerName . 'Controller.php';
-        $str = file_get_contents($file_path);
+        $templatePath = 'templates/ControllerTemplate';
+        $template = file_get_contents($templatePath);
+        $filePath = "app/Http/Controllers/" . $modelName . 'Controller.php';
 
-        $includesMarker = 'use Illuminate\Http\Request;';
-        $includes = $includesMarker . '
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\File;
-use App\\' . $modelName . ';';
-
-        $relationshipObjects = $foreignKeySelect = '';
+        $includes = $visibleFields = $relationshipObjects = $foreignKeySelect = '';
 
         foreach($contentArray as $contentInstance) if($contentInstance->foreignKey){
             $foreignModelName = $contentInstance->foreignKey->modelName;
@@ -139,46 +111,13 @@ use App\\' . $modelName . ';';
             $relationshipObjects .= ', "' . strtolower($foreignModelName) . '"';
         }
 
-        $str = file_get_contents($file_path);
-        $str = str_replace($includesMarker, $includes, $str);
-
-        $visibleFields = "'id'";
         foreach($contentArray as $contentInstance) if($contentInstance->isVisible)
             $visibleFields .= ", '" . $contentInstance->name . "'";
         
-        $content = '
-    public function index(){
-        $objects = ' . $modelName . '::select(' . $visibleFields . ')->orderBy("id", "DESC")->get();
-        ' . $foreignKeySelect . '
-        return view("admin.' . str_replace("_","-", $tableName) . '.index",  compact("objects"' . $relationshipObjects . ' ));
-    }
-
-    public function getOne($id){
-        $object = ' . $modelName . '::find($id);
-        return $object ? $object : null;
-    }
-    
-    public function destroy($id){
-        $object = ' . $modelName . '::find($id);
-        if($object)
-            $object->delete();
-        return back()->with("success", "Element uspješno obrisan!");
-    }
-    
-    public function deleted()
-	{
-        return view("admin.' . str_replace("_","-", $tableName) . '.deleted")->withObjects( ' . $modelName . '::select(' . $visibleFields . ')->onlyTrashed()->get());
-    }
-    
-    public function restore($id){
-        ' . $modelName . '::where("id", $id)->restore();
-		return back()->with("success", "Objekat uspješno aktiviran.");
-    }
-    
-    //';
-
-        $str = str_replace('//', $content, $str);
-        file_put_contents($file_path, $str);
+        $markers = ['||model||', '||table||', '||attributes||', '||foreignIncludes||', '||foreignFetch||', '||foreignObjects||'];
+        $realData = [$modelName, $tableName, $visibleFields, $includes, $foreignKeySelect, $relationshipObjects];
+        $template =  str_replace($markers, $realData, $template);
+        file_put_contents($filePath, $template);
     }
 
     public function changeMigrations($modelName, $tableName, $contentArray){
@@ -243,14 +182,14 @@ use App\\' . $modelName . ';';
                     break;
             }
 
-            $seederData[$contentInstance->name] = '
+            $seederData[$contentFieldName] = '
                 $faker->' . $seederDataType;
 
-            $attributesOutput .= '$table->' . $dataType . '("' . $contentInstance->name . '");
+            $attributesOutput .= '$table->' . $dataType . '("' . $contentFieldName . '");
             ';
 
             if($dataType == 'unsignedBigInteger') 
-                $attributesOutput .= '$table->foreign("' .  $contentInstance->name . '")->references("id")->on("' .  $contentInstance->foreignKey->tableName . '");
+                $attributesOutput .= '$table->foreign("' .  $contentFieldName . '")->references("id")->on("' .  $contentInstance->foreignKey->tableName . '");
                     ';
         }
 
@@ -396,8 +335,8 @@ use App\\' . $modelName . ';';
     }
 
     public function writeIndexBlade($tableName, $contentArray){
-        $file_path = "resources/views/admin/" . $tableName . "/index.blade.php";
-        $indexContent = file_get_contents($file_path);
+        $filePath = "resources/views/admin/" . $tableName . "/index.blade.php";
+        $indexContent = file_get_contents($filePath);
 
         $tableHeaders = $tableContent = $editBtnData = $modalOpenValue = $htmlInputs = $modalCloseValue = '';
 
@@ -421,66 +360,18 @@ use App\\' . $modelName . ';';
             $htmlInputs .= $this->getHtmlInputs($column);
         }
 
-        $indexContent = str_replace("<!-- Marker Table Heading -->", $tableHeaders, $indexContent);
-        $indexContent = str_replace("<!-- Marker Table Content -->", $tableContent, $indexContent);
-        $indexContent = str_replace("data-route-marker", $editBtnData, $indexContent);
-        $indexContent = str_replace("tableNameMarker", $tableName, $indexContent);
-        $indexContent = str_replace("//OpenModalMarker", $modalOpenValue, $indexContent);
-        $indexContent = str_replace("//CloseModalMarker", $modalCloseValue, $indexContent);
-        $indexContent = str_replace("<!-- InputsMarker -->", $htmlInputs, $indexContent);
-        file_put_contents($file_path, $indexContent);
+        $markers = ['<!-- Marker Table Heading -->', '<!-- Marker Table Content -->', 'data-route-marker',
+        'tableNameMarker', '//OpenModalMarker', '//CloseModalMarker', '<!-- InputsMarker -->'];
+        $realData = [$tableHeaders, $tableContent, $editBtnData, $tableName, $modalOpenValue, $modalCloseValue, $htmlInputs];
+        $indexContent = str_replace($markers, $realData, $indexContent);
+        file_put_contents($filePath, $indexContent);
 
-        $file_path = "resources/views/admin/" . $tableName . "/deleted.blade.php";
-        $deletedContent = file_get_contents($file_path);
-        $deletedContent = str_replace("<!-- Marker Table Heading -->", $tableHeaders, $deletedContent);
-        $deletedContent = str_replace("<!-- Marker Table Content -->", $tableContent, $deletedContent);
-        $deletedContent = str_replace("tableNameMarker", $tableName, $deletedContent);
-        file_put_contents($file_path, $deletedContent);
-    }
-
-    public function controllerStore($modelName, $tableName, $contentArray){
-        $file_path = "app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
-        $str = file_get_contents($file_path);
-
-        $declaringValidation = '$data = $request->validate([';
-        
-        $validationAlerts = '
-        ],
-        [';
-
-        $additionalHandling = '';
-
-        foreach($contentArray as $contentInstance){
-            $declaringValidation .= $this->declareValidation($contentInstance);
-            $validationAlerts .= $this->validationAlerts($contentInstance);
-            if($contentInstance->inputType == 'file')
-                $additionalHandling .= '
-            $data["' . $contentInstance->name . '"] = ' . $modelName . '::storeFile($data["' . $contentInstance->name . '"], "' . $tableName . '");';
-        }
-        
-        $validationAlerts .= '
-        ]);';
-        
-        $content = '
-    public function store(Request $request){
-        ' . $declaringValidation . $validationAlerts . $additionalHandling; 
-        
-        $content.= '
-
-        $data["create_user_id"] = Auth::user()->id;
-
-        ' . $modelName . '::create($data);
-
-
-        return response()->json(["success" => "success"], 200);
-         
-    }
-    //';
-
-        $str = str_replace('//', $content, $str);
-        file_put_contents($file_path, $str);
-
-        $this->controllerEdit($modelName, $tableName, $contentArray);
+        $filePath = "resources/views/admin/" . $tableName . "/deleted.blade.php";
+        $deletedContent = file_get_contents($filePath);
+        $markers = ['<!-- Marker Table Heading -->', '<!-- Marker Table Content -->', 'tableNameMarker',];
+        $realData = [$tableHeaders, $tableContent, $deletedContent];
+        $deletedContent = str_replace($markers, $realData, $deletedContent);
+        file_put_contents($filePath, $deletedContent);
     }
 
     public function declareValidation(TableContent $tableContentInsance){
@@ -562,84 +453,41 @@ use App\\' . $modelName . ';';
 
     }
 
-    public function controllerEdit($modelName, $tableName, $contentArray){
-        $file_path = "app/Http/Controllers/" . $this->capitalizeAttributes($tableName) . 'Controller.php';
-        $str = file_get_contents($file_path);
-
-        $declaringValidation = '$data = $request->validate([
-            "id" => "required",';
-        
-        $validationAlerts = '
-        ],
-        [';
-
-        $additionalHandling = '';
-
-        for($i = 0; $i < count($contentArray); $i++){
-            if($contentArray[$i]->inputType == 'file'){
-                $additionalHandling .= '
-                if( $request->hasFile( "'. $contentArray[$i]->name .'" ) ) 
-                    $data["' . $contentArray[$i]->name . '"] = ' . $modelName . '::storeFile($request["' . $contentArray[$i]->name . '"], "' . $tableName . '");';
-            }else{
-                $declaringValidation .= $this->declareValidation($contentArray[$i]);
-                $validationAlerts .= $this->validationAlerts($contentArray[$i]);
-            }
-              
-            
-        }
-        
-        $validationAlerts .= '
-        ]);';
-        
-        $content = '
-    public function edit(Request $request){
-        ' . $declaringValidation . $validationAlerts . $additionalHandling; 
-        
-        $content.= '
-
-        $object = ' . $modelName . '::find($data["id"]);
-        $data["update_user_id"] = Auth::user()->id;
-
-        $object->fill($data);
-        $object->save();
-       
-        return response()->json(["success" => "success"], 200);
-         
-    }';
-
-        $str = str_replace('//', $content, $str);
-        file_put_contents($file_path, $str);
-
-    }
-
-    public function createMutators(TableContent $tableContentInsance){
+    public function createMutators(TableContent $tableContentInsance, $modelName, $tableName){
+        $fieldName = $tableContentInsance->name;
         switch($tableContentInsance->dataType){
             case 'date':
                 return '
-            public function get' . $this->capitalizeAttributes($tableContentInsance->name) . 'Attribute($value){
+            public function get' . $this->capitalizeAttributes($fieldName) . 'Attribute($value){
                 return Carbon::parse($value)->format("d/m/Y");
             }
             
-            public function set' . $this->capitalizeAttributes($tableContentInsance->name)  . 'Attribute($value)
+            public function set' . $this->capitalizeAttributes($fieldName)  . 'Attribute($value)
             {
-                $this->attributes["' . $tableContentInsance->name . '"] = Carbon::createFromFormat("d/m/Y", $value);
+                $this->attributes["' . $fieldName . '"] = Carbon::createFromFormat("d/m/Y", $value);
             }';
                 break;
             case 'datetime':
                 return '
-            public function get' . $this->capitalizeAttributes($tableContentInsance->name) . 'Attribute($value){
+            public function get' . $this->capitalizeAttributes($fieldName) . 'Attribute($value){
                 return Carbon::parse($value)->format("d/m/Y H:i:s");
             }
             
-            public function set' . $this->capitalizeAttributes($tableContentInsance->name)  . 'Attribute($value)
+            public function set' . $this->capitalizeAttributes($fieldName)  . 'Attribute($value)
             {
-                $this->attributes["' . $tableContentInsance->name . '"] = Carbon::createFromFormat("d/m/Y H:i:s", $value);
+                $this->attributes["' . $fieldName . '"] = Carbon::createFromFormat("d/m/Y H:i:s", $value);
             }';
                 break;
             case 'image':
                     return '
-            public function get' . $this->capitalizeAttributes($tableContentInsance->name) . 'Attribute($value){
+            public function get' . $this->capitalizeAttributes($fieldName) . 'Attribute($value){
                 return strpos($value, "http") === false ? asset($value) : $value;
+            } 
+            
+            public function set' . $this->capitalizeAttributes($fieldName)  . 'Attribute($value)
+            {
+                if($value)
+                    $this->attributes["' . $fieldName . '"] = is_string($value) ? $value : ' . $modelName . '::storeFile($value, "' . $tableName . '");
             }';
                 break;
             case 'unsignedBigInteger':
@@ -664,7 +512,12 @@ use App\\' . $modelName . ';';
         $modelName = $table['model_name'];
         $contentArray = $table['attributes'];
 
-        $this->createModelController($modelName, $tableName, $contentArray);
+        Artisan::call('make:model ' . $modelName . ' -m');
+        Artisan::call('make:controller ' . $modelName . 'Controller');
+        Artisan::call('make:seeder ' . $modelName . 'Seeder');
+        Artisan::call('make:request ' . $modelName . 'Request');
+
+        $this->writeModel($modelName, $tableName, $contentArray);
         $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
 
         $this->insertIntoIndex($modelName, $tableName);
@@ -673,7 +526,7 @@ use App\\' . $modelName . ';';
 
         $this->changeMigrations($modelName, $tableName, $contentArray);
         $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
-        $this->controllerStore($modelName, $tableName, $contentArray);
+        $this->writeFormRequest($modelName, $tableName, $contentArray);
     }
 
     public function changeSeeder($modelName, $seederData){
@@ -692,7 +545,7 @@ use App\\' . $modelName . ';';
                 "' . $key . '" => ' . $value;
         }
         $seedOutput .= '
-            "create_user_id" => $faker->numberBetween($min = 1, $max = 10),
+            "create_user_id" => 1, //$faker->numberBetween($min = 1, $max = 10),
             "created_at" => $faker->dateTime($max = \'now\', $timezone = null)
             ]);
         }';
@@ -707,6 +560,49 @@ use App\\' . $modelName . ';';
         $initializationPos = strpos($dbSeederText, '}');
         $dbSeederOutput = substr_replace($dbSeederText, $seederInitialization, $initializationPos - 1, 0);
         file_put_contents($dbSeederFile, $dbSeederOutput);
+    }
+
+    public function writeFormRequest($modelName, $tableName, $contentArray){
+        $templatePath = 'templates/FormRequestTemplate';
+        $template = file_get_contents($templatePath);
+
+        Artisan::call('make:request ' . $modelName . 'Request');
+        $filePath = "app/Http/Requests/" . $this->capitalizeAttributes($modelName) . 'Request.php';
+        $fileContent = file_get_contents($filePath);
+        $tableName = str_replace("_","-", $tableName);
+
+        $rules = $messages = $additionalHandling = $additionalActionsMerge = '';
+
+        foreach($contentArray as $contentInstance){
+            $rules .= $this->declareValidation($contentInstance);
+            $messages .= $this->validationAlerts($contentInstance);
+            // if($contentInstance->inputType == 'file'){
+            //     $attributeName = $contentInstance->name;
+            //     $additionalHandling .= 'if($this->' . $attributeName . ')
+            //     $' . $attributeName  . ' = ' . $modelName . '::storeFile($data["' . $attributeName . '"], "' . $tableName . '");';   
+            //     $additionalActionsMerge = "'" . $attributeName . "' => $" . $attributeName . ",
+            //     ";
+            // }
+        }
+
+        // if(!empty($additionalHandling)){
+        //     $additionalHandling = '
+        //     public function validated()
+        //         {' . $additionalHandling . '
+        //             return array_merge(parent::validated(), [
+        //             ' . $additionalActionsMerge . '
+        //             ]);
+        //         }else{
+        //             return array_filter(parent::validated());
+        //         }'; 
+        //     $lastBracketPos = strrpos($fileContent, '}');
+        //     $fileContent = substr_replace($fileContent, $additionalHandling, $lastBracketPos, 0);
+        // }
+
+        $markers = ['||model||', '||table||', '||messages||', '||createRules||', '||updateRules||'];
+        $realData = [$modelName, $tableName, $messages, $rules, $rules];
+        $template =  str_replace($markers, $realData, $template);
+        file_put_contents($filePath, $template);
     }
 
 }

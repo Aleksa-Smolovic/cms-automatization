@@ -8,5 +8,9 @@
 8. Optimaze controller code?
 9. Optimaze routes
 10. Prefix admin
-11. Form requests Support
+11. Form requests Support - DONE
 12. Repository/Service Layer?
+13. Update without id but with object
+14. Create templates - 70% DONE, seeders missing
+15. Observers?
+16. Form request update rules (optimai ie. image)

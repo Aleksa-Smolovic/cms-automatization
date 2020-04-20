@@ -52,8 +52,8 @@ class GenerateEntity extends Command
             return;
         }
             
-        $tableName = $this->sanitaze($this->ask('Table name (as is)'));
-        $folderName = strtolower(str_replace("_","-", $tableName));
+        $tableName = strtolower($this->sanitaze($this->ask('Table name (as is)')));
+        $folderName = str_replace("_","-", $tableName);
         if(file_exists('resources/views/admin/' . $folderName)){
             $this->error('Folder ' . $folderName . ' already exists!');
             return;
@@ -95,7 +95,7 @@ class GenerateEntity extends Command
     }
 
     function fetchField($state){
-        $fieldName =  $this->sanitaze($state->ask('Table field name'));
+        $fieldName =  strtolower($this->sanitaze($state->ask('Table field name')));
         $fieldDisplayName =  $this->sanitaze($state->ask('Field display name'));
         $fieldDataType = $state->choice('Field data type', $this->dataTypes, $this->dataTypes[0]);
         $fieldInputType = $state->choice('Field input type', $this->inputTypes, $this->inputTypes[0]);
