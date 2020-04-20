@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
+use App\||model||;
+use App\Http\Requests\||model||Request;
+||foreignIncludes||
+
+class ||model||Controller extends Controller
+{
+    
+    public function index(){
+        $objects = ||model||::select('id' ||attributes||)->orderBy("id", "DESC")->get();
+        ||foreignFetch||
+        return view("admin.||table||.index",  compact("objects" ||foreignObjects||));
+    }
+
+    public function store(||model||Request $request){
+        $data = $request->validated();
+        $data["create_user_id"] = Auth::user()->id;
+        ||model||::create($data);
+        return response()->json(["success" => "success"], 200);
+    }
+
+    public function edit(||model||Request $request) {
+		$data = $request->validated();
+		$object = ||model||::find($data['id']);
+        $data["update_user_id"] = Auth::user()->id;
+		$object->fill($data);
+		$object->save();
+		return response()->json(['success' => 'success'], 200);
+	}
+
+    public function getOne($id){
+        $object = ||model||::find($id);
+        return $object ? $object : null;
+    }
+    
+    public function destroy($id){
+        $object = ||model||::find($id);
+        if($object)
+            $object->delete();
+        return back()->with("success", "Element uspješno obrisan!");
+    }
+    
+    public function deleted()
+	{
+        return view("admin.||table||.deleted")->withObjects( ||model||::select('id' ||attributes||)->onlyTrashed()->get());
+    }
+    
+    public function restore($id){
+        ||model||::where("id", $id)->restore();
+		return back()->with("success", "Objekat uspješno aktiviran.");
+    }
+    
+}
