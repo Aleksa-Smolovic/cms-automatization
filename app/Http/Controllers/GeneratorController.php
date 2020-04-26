@@ -35,18 +35,17 @@ class GeneratorController extends Controller
         file_put_contents($filePath, $str);
     }
 
-    public function insertIntoWeb($tableName){
-        $controllerName = $this->capitalizeAttributes($tableName);
+    public function insertIntoWeb($tableName, $modelName){
         $tableName = str_replace("_","-", $tableName);
 
         $item = "
-    Route::get('/admin/" . $tableName . "', '" . $controllerName . "Controller@index')->name('admin/" . $tableName . "');
-    Route::get('/admin/" . $tableName . "/deleted', '" . $controllerName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
-    Route::get('/admin/" . $tableName . "/{id}', '" . $controllerName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
-    Route::delete('/admin/" . $tableName . "/delete/{id}', '" . $controllerName . "Controller@destroy')->name('" . $tableName . "/delete');
-    Route::post('/admin/" . $tableName . "/restore/{id}', '" . $controllerName . "Controller@restore')->name('" . $tableName . "/restore');
-    Route::post('/admin/" . $tableName . "/store', '" . $controllerName . "Controller@store')->name('" . $tableName . "/store');
-    Route::post('/admin/" . $tableName . "/edit', '" . $controllerName . "Controller@edit')->name('" . $tableName . "/edit');
+    Route::get('/" . $tableName . "', '" . $modelName . "Controller@index')->name('admin/" . $tableName . "');
+    Route::get('/" . $tableName . "/deleted', '" . $modelName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
+    Route::get('/" . $tableName . "/{id}', '" . $modelName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
+    Route::delete('/" . $tableName . "/delete/{id}', '" . $modelName . "Controller@destroy')->name('" . $tableName . "/delete');
+    Route::post('/" . $tableName . "/restore/{id}', '" . $modelName . "Controller@restore')->name('" . $tableName . "/restore');
+    Route::post('/" . $tableName . "/store', '" . $modelName . "Controller@store')->name('" . $tableName . "/store');
+    Route::post('/" . $tableName . "/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
     //->MARKER";
 
         $filePath = "routes/web.php";
@@ -66,12 +65,12 @@ class GeneratorController extends Controller
         }
 
         //TO DO povuci sa interneta fajl?
-        $indexContent = file_get_contents('resources/views/admin/example/index.blade.php');
+        $indexContent = file_get_contents('templates/index.blade.php');
         $myfile = fopen("resources/views/admin/" . $tableName . "/index.blade.php", "w") or die("Unable to open file!");
         fwrite($myfile, $indexContent);
         fclose($myfile);
 
-        $deletedContent = file_get_contents('resources/views/admin/example/deleted.blade.php');
+        $deletedContent = file_get_contents('templates/deleted.blade.php');
         $deletedFile = fopen("resources/views/admin/" . $tableName . "/deleted.blade.php", "w") or die("Unable to open file!");
         fwrite($deletedFile, $deletedContent);
         fclose($deletedFile);
@@ -521,7 +520,7 @@ class GeneratorController extends Controller
         $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
 
         $this->insertIntoIndex($modelName, $tableName);
-        $this->insertIntoWeb($tableName);
+        $this->insertIntoWeb($tableName, $modelName);
         $this->writeController($modelName, $tableName, $contentArray);
 
         $this->changeMigrations($modelName, $tableName, $contentArray);
@@ -530,28 +529,24 @@ class GeneratorController extends Controller
     }
 
     public function changeSeeder($modelName, $seederData){
+        $templatePath = 'templates/SeederTemplate';
+        $template = file_get_contents($templatePath);
+
         $folderPath = 'database/seeds/';
         $seederFileName =  $folderPath . $modelName . 'Seeder.php';
         $str = file_get_contents($seederFileName);
         if($str === false || empty($str)) 
             exit($seederFileName);
-        $seedOutput =
-        '$faker = Faker\Factory::create();
-            for($i = 0; $i < 20; $i++) {
-                App\\' . $modelName . '::create([
-                ';
+        $seedOutput = '';
         foreach ($seederData as $key => $value) {
             $seedOutput .= '
                 "' . $key . '" => ' . $value;
         }
-        $seedOutput .= '
-            "create_user_id" => 1, //$faker->numberBetween($min = 1, $max = 10),
-            "created_at" => $faker->dateTime($max = \'now\', $timezone = null)
-            ]);
-        }';
-        $marker = '//';
-        $str = str_replace($marker, $seedOutput, $str);
-        file_put_contents($seederFileName, $str);
+
+        $markers = ['||model||', '||data||'];
+        $realData = [$modelName, $seedOutput];
+        $template =  str_replace($markers, $realData, $template);
+        file_put_contents($seederFileName, $template);
 
         $dbSeederFile =  $folderPath . 'DatabaseSeeder.php';
         $dbSeederText = file_get_contents($dbSeederFile);
@@ -576,28 +571,7 @@ class GeneratorController extends Controller
         foreach($contentArray as $contentInstance){
             $rules .= $this->declareValidation($contentInstance);
             $messages .= $this->validationAlerts($contentInstance);
-            // if($contentInstance->inputType == 'file'){
-            //     $attributeName = $contentInstance->name;
-            //     $additionalHandling .= 'if($this->' . $attributeName . ')
-            //     $' . $attributeName  . ' = ' . $modelName . '::storeFile($data["' . $attributeName . '"], "' . $tableName . '");';   
-            //     $additionalActionsMerge = "'" . $attributeName . "' => $" . $attributeName . ",
-            //     ";
-            // }
         }
-
-        // if(!empty($additionalHandling)){
-        //     $additionalHandling = '
-        //     public function validated()
-        //         {' . $additionalHandling . '
-        //             return array_merge(parent::validated(), [
-        //             ' . $additionalActionsMerge . '
-        //             ]);
-        //         }else{
-        //             return array_filter(parent::validated());
-        //         }'; 
-        //     $lastBracketPos = strrpos($fileContent, '}');
-        //     $fileContent = substr_replace($fileContent, $additionalHandling, $lastBracketPos, 0);
-        // }
 
         $markers = ['||model||', '||table||', '||messages||', '||createRules||', '||updateRules||'];
         $realData = [$modelName, $tableName, $messages, $rules, $rules];

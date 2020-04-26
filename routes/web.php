@@ -9,7 +9,7 @@ Route::get('/', 'WebsiteController@index');
 /**
  * Admin Panel routes
  */
-Route::group(['middleware' => ['auth', 'admin']], function () {
+Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function () {
 
 	// Users
     Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
@@ -26,7 +26,7 @@ Route::group(['middleware' => ['auth', 'admin']], function () {
 	Route::resource('roles', 'RolesController');
 
 	// Admin
-    Route::get('/admin', 'AdminPanelController@index')->name('admin.index');
+    Route::get('', 'AdminPanelController@index')->name('admin.index');
     
     //->MARKER
 
