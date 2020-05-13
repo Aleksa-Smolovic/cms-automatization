@@ -49,7 +49,7 @@
 									@endforeach
 									</tbody>
 								</table>
-								<a class="btn btn-sm btn-warning" href="{{ route('admin/tableNameMarker') }}"> Objekti</a href="{{ route('admin/tableNameMarker') }}">
+								<a class="btn btn-sm btn-warning" href="{{ route('admin/tableNameMarker') }}"> Objekti</a>
 							@else
 								<h2>Nema obrisanih objekata, <a class="text-primary" href="{{ route('admin/tableNameMarker') }}">idi nazad</a></h2>
 							@endif
