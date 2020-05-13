@@ -3,6 +3,8 @@ $(".submitForm").submit(function(event){
     $(".submitFormBtn").attr("disabled", true);
     $(".formSpinner").show();
     var formData = new FormData($(this)[0]);
+    // if(typeof route === undefined)
+    var route = $(this).attr('action');
     $.ajaxSetup({headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}});
     $.ajax({
         url: route,

@@ -26,9 +26,8 @@ class UsersController extends Controller
 		return response()->json(['success' => 'success'], 200);
 	}
 
-	public function edit(UserStoreRequest $request) {
+	public function edit(UserStoreRequest $request, User $user) {
 		$data = $request->validated();
-		$user = User::find($data['id']);
 		$user->fill($data);
 		$user->save();
 		return response()->json(['success' => 'success'], 200);

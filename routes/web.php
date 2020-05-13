@@ -15,10 +15,10 @@ Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function
     Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
     Route::get('/users', 'UsersController@index')->name('users');
     Route::get('/users/{id}', 'UsersController@getOne')->name('users/fetch');
-    Route::post('/users/edit', 'UsersController@edit')->name('users/edit');
+    Route::post('/users/{user}/edit', 'UsersController@edit')->name('users/edit');
     Route::post('/users/store', 'UsersController@store')->name('users/store');
     Route::delete('/users/delete/{user}', 'UsersController@destroy')->name('users/delete');
-    Route::post('/users/restore/{id}', 'UsersController@restore')->name('users/restore');
+    Route::put('/users/restore/{id}', 'UsersController@restore')->name('users/restore');
 
 	// Roles
 	Route::post('/roles/{role}/restore', 'RolesController@restore')->name('roles.restore');

@@ -6,11 +6,12 @@
 6. refactor users - DONE
 7. Support for nullable fields
 8. Optimaze controller code?
-9. Optimaze routes
+9. Optimaze routes - DONE
 10. Prefix admin - DONE
 11. Form requests Support - DONE
 12. Repository/Service Layer?
-13. Update without id but with object
+13. Update without id but with object - DONE
 14. Create templates - 70% DONE, seeders missing - DONE
 15. Observers?
 16. Form request update rules (optimaze ie. image)
+17. deleted.blade - fix - DONE

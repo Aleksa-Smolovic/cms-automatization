@@ -55,6 +55,7 @@
 												<td class="text-center">
 													<form action="{{ route('users/restore', $user->id) }}" method="POST">
 														@csrf
+														@method('PUT')
 														<button class="btn btn-sm btn-info" type="submit">Povrati</button>
 													</form>
 												</td>

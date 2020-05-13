@@ -84,19 +84,19 @@
 
 @section('js')
 
-<script>
-	var route = "users/store";
-	
+<script>	
 	$('#myModal').on('hidden.bs.modal', function () {
 		$(".submitForm")[0].reset();
 	});
 	
 	$("#add").click(function(){
-		route = "users/store";
+		$('.objectForm').attr('action', "{{ route('users/store') }}");
 	});
 	
 	$(".edit").click(function(){
-		route = "users/edit";
+		var url = "{{ route('users/edit', ':id') }}";
+		url = url.replace(':id', $(this).data('id'));
+		$('.objectForm').attr('action', url);
 	});
 	
 	$('.table').DataTable({
@@ -104,7 +104,6 @@
 	});
 	
 	function showData(returndata){
-		$('#id').val(returndata.id);
 		$('#full_name').val(returndata.full_name);
 		$('#email').val(returndata.email);
 		$('#role_id').val(returndata.role_id);
@@ -120,11 +119,10 @@
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         
-		<form class="submitForm">
+		<form class="submitForm objectForm" action="{{ route('users/store') }}">
 		@csrf
         <div class="modal-body">
 			<div class="container">
-				<input type="hidden" name="id" id="id">
 				
 				<div class="form-group">
 					<label class="col-form-label" for="full_name">Ime i prezime</label>

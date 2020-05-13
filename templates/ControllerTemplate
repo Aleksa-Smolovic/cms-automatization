@@ -25,9 +25,8 @@ class ||model||Controller extends Controller
         return response()->json(["success" => "success"], 200);
     }
 
-    public function edit(||model||Request $request) {
+    public function edit(||model||Request $request, ||model|| $object) {
 		$data = $request->validated();
-		$object = ||model||::find($data['id']);
         $data["update_user_id"] = Auth::user()->id;
 		$object->fill($data);
 		$object->save();

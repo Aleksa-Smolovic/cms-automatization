@@ -43,9 +43,9 @@ class GeneratorController extends Controller
     Route::get('/" . $tableName . "/deleted', '" . $modelName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
     Route::get('/" . $tableName . "/{id}', '" . $modelName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
     Route::delete('/" . $tableName . "/delete/{id}', '" . $modelName . "Controller@destroy')->name('" . $tableName . "/delete');
-    Route::post('/" . $tableName . "/restore/{id}', '" . $modelName . "Controller@restore')->name('" . $tableName . "/restore');
+    Route::put('/" . $tableName . "/restore/{id}', '" . $modelName . "Controller@restore')->name('" . $tableName . "/restore');
     Route::post('/" . $tableName . "/store', '" . $modelName . "Controller@store')->name('" . $tableName . "/store');
-    Route::post('/" . $tableName . "/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
+    Route::post('/" . $tableName . "/{object}/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
     //->MARKER";
 
         $filePath = "routes/web.php";
@@ -114,7 +114,7 @@ class GeneratorController extends Controller
             $visibleFields .= ", '" . $contentInstance->name . "'";
         
         $markers = ['||model||', '||table||', '||attributes||', '||foreignIncludes||', '||foreignFetch||', '||foreignObjects||'];
-        $realData = [$modelName, $tableName, $visibleFields, $includes, $foreignKeySelect, $relationshipObjects];
+        $realData = [$modelName, str_replace("_", "-", $tableName), $visibleFields, $includes, $foreignKeySelect, $relationshipObjects];
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($filePath, $template);
     }
@@ -368,7 +368,7 @@ class GeneratorController extends Controller
         $filePath = "resources/views/admin/" . $tableName . "/deleted.blade.php";
         $deletedContent = file_get_contents($filePath);
         $markers = ['<!-- Marker Table Heading -->', '<!-- Marker Table Content -->', 'tableNameMarker',];
-        $realData = [$tableHeaders, $tableContent, $deletedContent];
+        $realData = [$tableHeaders, $tableContent, $tableName];
         $deletedContent = str_replace($markers, $realData, $deletedContent);
         file_put_contents($filePath, $deletedContent);
     }

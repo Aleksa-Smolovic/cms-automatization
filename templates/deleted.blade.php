@@ -40,6 +40,7 @@
 											<!-- Marker Table Content -->
 											<td class="text-center">
 												<form action="{{ route('tableNameMarker/restore', $object->id) }}" method="POST">
+													@method('PUT')
 													@csrf
 													<button class="btn btn-sm btn-info" type="submit">Povrati</button>
 												</form>

@@ -24,7 +24,7 @@ class UserStoreRequest extends FormRequest
      */
     public function rules()
     {
-        return $this->is('users/store') ? $this->createRules() : $this->updateRules();
+        return $this->is('admin/users/store') ? $this->createRules() : $this->updateRules();
     }
 
     public function messages()
@@ -52,10 +52,9 @@ class UserStoreRequest extends FormRequest
 
     public function updateRules(){
         return [
-            'id' => 'required',
             'role_id'    => 'required',
 			'full_name' => 'required',
-			'email'      => 'required|email|unique:users,email,' . $this->id,
+			'email'      => 'required|email|unique:users,email,' . $this->route('user')->id,
 			'password'   => 'nullable|min:6|confirmed'
         ];
     }

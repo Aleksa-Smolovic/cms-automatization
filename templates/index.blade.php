@@ -8,7 +8,6 @@
 			<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
 				<div class="page-header" id="top">
 					<h2 class="pageheader-title">Objekti</h2>
-					<p class="pageheader-text">Proin placerat ante duiullam scelerisque a velit ac porta, fusce sit amet vestibulum mi. Morbi lobortis pulvinar quam.</p>
 				</div>
 			</div>
 		</div>
@@ -57,7 +56,7 @@
 								</tbody>
 							</table>
 						</div>
-						<a class="btn btn-sm btn-warning" href="{{ route('admin/tableNameMarker/deleted') }}">Izbrisani objekti</a href="{{ route('admin/tableNameMarker/deleted') }}">
+						<a class="btn btn-sm btn-warning" href="{{ route('admin/tableNameMarker/deleted') }}">Izbrisani objekti</a>
 					</div>
 				</div>
 			</div>
@@ -70,30 +69,30 @@
 @section('js')
 
 <script>
-var route = "tableNameMarker/store";
 
-$('#myModal').on('hidden.bs.modal', function () {
-	$(".submitForm")[0].reset();
-	//CloseModalMarker
-});
+	$('#myModal').on('hidden.bs.modal', function () {
+		$(".submitForm")[0].reset();
+		//CloseModalMarker
+	});
 
-$("#add").click(function(){
-	route = "tableNameMarker/store";
-});
+	$("#add").click(function(){
+		$('.objectForm').attr('action', "{{ route('tableNameMarker/store') }}");
+	});
+	
+	$(".edit").click(function(){
+		var url = "{{ route('tableNameMarker/edit', ':id') }}";
+		url = url.replace(':id', $(this).data('id'));
+		$('.objectForm').attr('action', url);
+	});
 
-$(".edit").click(function(){
-	route = "tableNameMarker/edit";
-});
+	$('.table').DataTable({
+		"order": [[ 0, "desc" ]]
+	});
 
-$('.table').DataTable({
-    "order": [[ 0, "desc" ]]
-});
-
-function showData(returndata){
-	$('#id').val(returndata.id);
-	//OpenModalMarker
-	$('#myModal').modal('show'); 
-}
+	function showData(returndata){
+		//OpenModalMarker
+		$('#myModal').modal('show'); 
+	}
 
 </script>
 
@@ -103,11 +102,10 @@ function showData(returndata){
           <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
         
-		<form class="submitForm">
+		<form class="submitForm objectForm" action="{{ route('tableNameMarker/store') }}">
 		@csrf
         <div class="modal-body">
 			<div class="container">
-				<input type="hidden" name="id" id="id">
 
 
 				<!-- InputsMarker -->

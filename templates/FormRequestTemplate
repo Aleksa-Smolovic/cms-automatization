@@ -29,7 +29,6 @@ class ||model||Request extends FormRequest
     public function messages()
     {
         return [
-            'id.required' => 'Morate odabrati objekat!',
             ||messages||
         ];
     }
@@ -42,7 +41,6 @@ class ||model||Request extends FormRequest
 
     public function updateRules(){
         return [
-            'id' => 'required',
             ||updateRules||
         ];
     }
