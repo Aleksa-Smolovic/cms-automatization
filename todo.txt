@@ -15,3 +15,4 @@
 15. Observers?
 16. Form request update rules (optimaze ie. image)
 17. deleted.blade - fix - DONE
+18. .json - for editing?
