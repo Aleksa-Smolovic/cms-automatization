@@ -1,10 +1,8 @@
 <?php
 
-namespace App;
+namespace Generator;
 
-use Illuminate\Database\Eloquent\Model;
-
-class TableContent extends Model
+class TableContent implements \JsonSerializable
 {
     
     public $dataType;
@@ -23,4 +21,16 @@ class TableContent extends Model
         $this->isVisible = $isVisible;
         $this->foreignKey = $foreignKey;
     }
+
+    public function jsonSerialize() {
+        return [
+            'dataType' => $this->dataType,
+            'name' => $this->name,
+            'placeholder' => $this->placeholder,
+            'inputType' => $this->inputType,
+            'isVisible' => $this->isVisible,
+            'foreignKey' => $this->foreignKey,
+        ];
+    }
+
 }

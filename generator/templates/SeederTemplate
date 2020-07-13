@@ -14,8 +14,9 @@ class ||model||Seeder extends Seeder
         $faker = Faker\Factory::create();
         for($i = 0; $i < 20; $i++) {
             App\||model||::create([
+                //<needle>
                 ||data||
-                
+                //</needle>
                 "create_user_id" => 1, //$faker->numberBetween($min = 1, $max = 10),
                 "created_at" => $faker->dateTime($max = 'now', $timezone = null)
             ]);

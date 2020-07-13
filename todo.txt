@@ -5,14 +5,21 @@
 5. seeders - DONE
 6. refactor users - DONE
 7. Support for nullable fields
-8. Optimaze controller code?
+8. Optimaze controller code? -> Remove controller, switch to custom namespace - DONE
 9. Optimaze routes - DONE
 10. Prefix admin - DONE
 11. Form requests Support - DONE
-12. Repository/Service Layer?
+12. Service Layer?
 13. Update without id but with object - DONE
 14. Create templates - 70% DONE, seeders missing - DONE
 15. Observers?
 16. Form request update rules (optimaze ie. image)
 17. deleted.blade - fix - DONE
-18. .json - for editing?
+18. .json - for editing? - DONE
+19. VUE
+20. utilize datatables loading with pagination?
+21. switch to constants, custom config php
+22. custom css, remove template
+23. slot for menu - DONE
+24. delete images folder on entity:delete
+25. Schema maked, batch generate

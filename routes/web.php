@@ -28,6 +28,7 @@ Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function
 	// Admin
     Route::get('', 'AdminPanelController@index')->name('admin.index');
     
+    
     //->MARKER
 
 });

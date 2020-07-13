@@ -1,44 +1,46 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace Generator;
 
-use Illuminate\Http\Request;
 use Artisan;
-use App\TableContent;
-use App\ForeignKeyInstance;
+use Generator\TableContent;
+use Generator\ForeignKeyInstance;
+use Generator\Constants;
+use Generator\Utils;
 
-class GeneratorController extends Controller
+class Generator 
 {
     //include: Class -> TableContent, Example resource folder, Admin css/js, templates
-    //Tags in web and index.blade(nav), FileHandle Trait, GeneratorController, AutomatizationInputController
+    //Tags in web, FileHandle Trait, GeneratorController, AutomatizationInputController
 
     //TO DO Error Handling
-    //TO DO _ -> - za spaceove
-    //TO DO upisati u jedan fajl? writeController   
 
     private $ajaxReturnData = 'returndata';
 
-    public function insertIntoIndex($modelName, $tableName){
+    public function insertIntoNav($modelName, $tableName){
         $routeIndex = str_replace("_","-", $tableName);
-        $item = "
+        $startNeedle = str_replace('||model||', $modelName, Constants::HTML_NEEDLE_START);
+        $endNeedle = Constants::HTML_NEEDLE_END;
+        $item = $startNeedle . "
         	<li class=\"nav-item\">
                 <a class=\"nav-link\" href=\"{{ route('admin/$routeIndex') }}\">
                     <i class=\"fab fa-fw fa-wpforms\"></i>$modelName
                 </a>
             </li>
-            <!-- MARKER -->";
+        " . $endNeedle;
 
-        $filePath = "resources/views/layouts/index.blade.php";
-
-        $str = file_get_contents($filePath);
-        $str = str_replace("<!-- MARKER -->", $item, $str);
-        file_put_contents($filePath, $str);
+        $sidebar = file_get_contents(Constants::SIDEBAR_ITEMS);
+        $sidebar .= $item;
+        file_put_contents(Constants::SIDEBAR_ITEMS, $sidebar);
     }
 
     public function insertIntoWeb($tableName, $modelName){
         $tableName = str_replace("_","-", $tableName);
 
-        $item = "
+        $startNeedle = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
+        $endNeedle = Constants::PHP_NEEDLE_END;
+
+        $item = $startNeedle . "
     Route::get('/" . $tableName . "', '" . $modelName . "Controller@index')->name('admin/" . $tableName . "');
     Route::get('/" . $tableName . "/deleted', '" . $modelName . "Controller@deleted')->name('admin/" . $tableName . "/deleted');
     Route::get('/" . $tableName . "/{id}', '" . $modelName . "Controller@getOne')->name('admin/" . $tableName . "/fetch');
@@ -46,38 +48,36 @@ class GeneratorController extends Controller
     Route::put('/" . $tableName . "/restore/{id}', '" . $modelName . "Controller@restore')->name('" . $tableName . "/restore');
     Route::post('/" . $tableName . "/store', '" . $modelName . "Controller@store')->name('" . $tableName . "/store');
     Route::post('/" . $tableName . "/{object}/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
+    "
+    . $endNeedle . 
+    "
     //->MARKER";
 
-        $filePath = "routes/web.php";
-
-        $str = file_get_contents($filePath);
+        $str = file_get_contents(Constants::ROUTES_DIR);
         $str = str_replace("//->MARKER", $item, $str);
-        file_put_contents($filePath, $str);
+        file_put_contents(Constants::ROUTES_DIR, $str);
     }
 
-    //TO DO vidjeti moze li create or replace na file ili folder?
     public function createIndexDeletedFiles($tableName){
         $tableName = strtolower($tableName);
         if (!file_exists('resources/views/admin/' . $tableName)) {
-            if(!mkdir('resources/views/admin/' . $tableName, 0777, true));
-        }else{
-            exit($tableName);
+            if(!mkdir('resources/views/admin/' . $tableName, 0777, true))
+                exit('Error creating view files!');
         }
 
-        //TO DO povuci sa interneta fajl?
-        $indexContent = file_get_contents('templates/index.blade.php');
+        $indexContent = file_get_contents('generator/templates/index.blade.php');
         $myfile = fopen("resources/views/admin/" . $tableName . "/index.blade.php", "w") or die("Unable to open file!");
         fwrite($myfile, $indexContent);
         fclose($myfile);
 
-        $deletedContent = file_get_contents('templates/deleted.blade.php');
+        $deletedContent = file_get_contents('generator/templates/deleted.blade.php');
         $deletedFile = fopen("resources/views/admin/" . $tableName . "/deleted.blade.php", "w") or die("Unable to open file!");
         fwrite($deletedFile, $deletedContent);
         fclose($deletedFile);
     }
 
     public function writeModel($modelName, $tableName, $contentArray){
-        $templatePath = 'templates/ModelTemplate';
+        $templatePath = 'generator/templates/ModelTemplate';
         $template = file_get_contents($templatePath);
         $filePath = "app/" . $modelName . '.php';
 
@@ -93,7 +93,7 @@ class GeneratorController extends Controller
     }
 
     public function writeController($modelName, $tableName, $contentArray){
-        $templatePath = 'templates/ControllerTemplate';
+        $templatePath = 'generator/templates/ControllerTemplate';
         $template = file_get_contents($templatePath);
         $filePath = "app/Http/Controllers/" . $modelName . 'Controller.php';
 
@@ -120,73 +120,36 @@ class GeneratorController extends Controller
     }
 
     public function changeMigrations($modelName, $tableName, $contentArray){
-        $filename = "database/migrations/*";
-        foreach (glob($filename) as $filefound) {
-            if(strpos($filefound, $tableName) !== false){
-                $migrationFileName = $filefound;
-            }
-        }
-        if(!isset($migrationFileName)){
+        $migrationFileName = Utils::findFile(Constants::MIGRATIONS_DIR . '*', 'create_' . $tableName . '_table.php');
+
+        if(!isset($migrationFileName) || !$migrationFileName){
             echo 'File not found ' . $tableName;
             return;
         }
 
         $marker = '$table->timestamps();';
-        $attributesOutput = '';
+        
+        $str = file_get_contents($migrationFileName);
+        $data = $this->createMigrationData($modelName, $contentArray);
+        $str = str_replace($marker, $data['migrationData'], $str);
+        file_put_contents($migrationFileName, $str);
+
+        $this->changeSeeder($modelName, $data['seederData'], true);
+    }
+
+    public function createMigrationData($modelName, $contentArray){
+        $attributesOutput = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
         $seederData = [];
 
         foreach($contentArray as $contentInstance){
             $contentFieldName = $contentInstance->name;
-            switch($contentInstance->dataType){
-                case 'image':
-                    $dataType = 'text';
-                    $seederDataType = 'imageUrl($width = 640, $height = 480),';
-                    break;
-                case 'text':
-                    $dataType = 'text';
-                    $seederDataType = 'realText($maxNbChars = 200, $indexSize = 2),';
-                    break;
-                case 'string':
-                    $dataType = 'string';
-                    $seederDataType = 'sentence($nbWords = 3, $variableNbWords = true),';
-                    break;
-                case 'boolean':
-                    $dataType = 'boolean';
-                    $seederDataType = 'boolean($chanceOfGettingTrue = 50),';
-                    break;
-                case 'integer':
-                    $dataType = 'integer';
-                    $seederDataType = 'numberBetween($min = 50, $max = 450),';
-                    break;
-                case 'date':
-                    $dataType = 'date';
-                    $seederDataType = 'date($format = "d/m/Y", $max = "now"),';
-                    break;
-                case 'datetime':
-                    $dataType = 'datetime';
-                    $seederDataType = 'dateTime($max = "now", $timezone = null)->format("d/m/Y H:i:s"),';
-                    break;
-                case 'double':
-                    $dataType = 'double';
-                    $seederDataType = 'randomFloat($nbMaxDecimals = NULL, $min = 0, $max = NULL),';
-                    break;
-                case 'unsignedBigInteger':
-                    $dataType = 'unsignedBigInteger';
-                    $seederDataType = 'numberBetween($min = 1, $max = 10),';
-                    break;    
-                default:
-                    //TO DO bolje rjesenje
-                    $dataType = 'unsignedBigInteger';
-                    $seederDataType = 'numberBetween($min = 0, $max = 10),';
-                    break;
-            }
-
+            $dataTypeInfo = Constants::MIGRATION_DATATYPES[$contentInstance->dataType];
             $seederData[$contentFieldName] = '
-                $faker->' . $seederDataType;
-
-            $attributesOutput .= '$table->' . $dataType . '("' . $contentFieldName . '");
+            $faker->' . $dataTypeInfo['seederDataType'];
+            $dataType = $dataTypeInfo['dataType'];
+            $attributesOutput .= '
+            $table->' . $dataType . '("' . $contentFieldName . '");
             ';
-
             if($dataType == 'unsignedBigInteger') 
                 $attributesOutput .= '$table->foreign("' .  $contentFieldName . '")->references("id")->on("' .  $contentInstance->foreignKey->tableName . '");
                     ';
@@ -200,22 +163,40 @@ class GeneratorController extends Controller
             
             $table->foreign("create_user_id")->references("id")->on("users");
             $table->foreign("update_user_id")->references("id")->on("users");
-            ';
-        $str = file_get_contents($migrationFileName);
-        $str = str_replace($marker, $attributesOutput, $str);
-        file_put_contents($migrationFileName, $str);
+            
+            ' . Constants::PHP_NEEDLE_END;
 
-        $this->changeSeeder($modelName, $seederData);
+        return ['migrationData' => $attributesOutput, 'seederData' => $seederData];
     }
 
+    public function regenerateMigrations($modelName, $tableName, $contentArray){
+        $migrationFileName = Utils::findFile(Constants::MIGRATIONS_DIR . '*', 'create_' . $tableName . '_table.php');
+
+        if(!isset($migrationFileName) || !$migrationFileName){
+            echo 'File not found ' . $tableName;
+            return;
+        }
+
+        $migrationFile = file_get_contents($migrationFileName);
+        $needleStart = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
+        $needleEnd = Constants::PHP_NEEDLE_END;
+        $data = $this->createMigrationData($modelName, $contentArray);
+        $attributesOutput = RemovalUtils::replaceBetween($migrationFile, $needleStart, $needleEnd, $data['migrationData']);
+       
+        file_put_contents($migrationFileName, $attributesOutput);
+        $this->changeSeeder($modelName, $data['seederData'], false);
+    }
+
+    // TODO find replacement laravel fn?
     public function capitalToDashString($str){
         return strtolower(preg_replace('~(?=[A-Z])(?!\A)~', '_', $str));
     }
 
-    public function getHtmlInputs(TableContent $contentInstance){
+    public function getHtmlInputs($contentInstance){
         $inputType = $contentInstance->inputType;
         $inputName = $contentInstance->name;
         $inputPlaceholder = $contentInstance->placeholder;
+        // TODO switch to constants
         switch($inputType){
             case 'textarea':
                 return '
@@ -319,7 +300,8 @@ class GeneratorController extends Controller
 
     }
 
-    public function getTableContent(TableContent $tableContent){
+    // TODO change to use custom objects instead of stdClass, ie. TableContent $tableContent
+    public function getTableContent($tableContent){
         switch($tableContent->dataType){
             case 'image':
                 return '<td class="text-center">
@@ -373,8 +355,8 @@ class GeneratorController extends Controller
         file_put_contents($filePath, $deletedContent);
     }
 
-    public function declareValidation(TableContent $tableContentInsance){
-
+    public function declareValidation($tableContentInsance){
+        //TODO switch to constants
         switch($tableContentInsance->inputType){
             case 'textarea':
                 return "
@@ -408,7 +390,7 @@ class GeneratorController extends Controller
 
     }
 
-    public function validationAlerts(TableContent $contentInstance){
+    public function validationAlerts($contentInstance){
         $inputName = $contentInstance->name;
         $inputPlaceholder = $contentInstance->placeholder;
         switch($contentInstance->inputType){
@@ -452,7 +434,7 @@ class GeneratorController extends Controller
 
     }
 
-    public function createMutators(TableContent $tableContentInsance, $modelName, $tableName){
+    public function createMutators($tableContentInsance, $modelName, $tableName){
         $fieldName = $tableContentInsance->name;
         switch($tableContentInsance->dataType){
             case 'date':
@@ -500,16 +482,15 @@ class GeneratorController extends Controller
 
     public function capitalizeAttributes($str) {
         $frags = explode('_', $str);
-        for ($i = 0; $i < count($frags); $i++) {
+        for ($i = 0; $i < count($frags); $i++) 
           $frags[$i] = strtoupper(substr($frags[$i], 0, 1)) . substr($frags[$i], 1);;
-        }
         return join('', $frags);
     }
 
-    public function generate($table){
-        $tableName = strtolower($table['table_name']);
-        $modelName = $table['model_name'];
-        $contentArray = $table['attributes'];
+    public function generate($entity){
+        $tableName = strtolower($entity->tableName);
+        $modelName = $entity->modelName;
+        $contentArray = $entity->fields;
 
         Artisan::call('make:model ' . $modelName . ' -m');
         Artisan::call('make:controller ' . $modelName . 'Controller');
@@ -519,17 +500,34 @@ class GeneratorController extends Controller
         $this->writeModel($modelName, $tableName, $contentArray);
         $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
 
-        $this->insertIntoIndex($modelName, $tableName);
+        $this->insertIntoNav($modelName, $tableName);
         $this->insertIntoWeb($tableName, $modelName);
         $this->writeController($modelName, $tableName, $contentArray);
 
         $this->changeMigrations($modelName, $tableName, $contentArray);
         $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
         $this->writeFormRequest($modelName, $tableName, $contentArray);
+
+        Utils::writeToJson($entity);
     }
 
-    public function changeSeeder($modelName, $seederData){
-        $templatePath = 'templates/SeederTemplate';
+    public function regenerate($entity){
+        $tableName = strtolower($entity->tableName);
+        $modelName = $entity->modelName;
+        $contentArray = $entity->fields;
+
+        $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
+        $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
+        $this->writeController($modelName, $tableName, $contentArray);
+        $this->writeFormRequest($modelName, $tableName, $contentArray);
+
+        $this->regenerateMigrations($modelName, $tableName, $contentArray);
+        $this->writeModel($modelName, $tableName, $contentArray);
+        Utils::writeToJson($entity);
+    }
+
+    public function changeSeeder($modelName, $seederData, $isNewEntity){
+        $templatePath = 'generator/templates/SeederTemplate';
         $template = file_get_contents($templatePath);
 
         $folderPath = 'database/seeds/';
@@ -548,20 +546,21 @@ class GeneratorController extends Controller
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($seederFileName, $template);
 
-        $dbSeederFile =  $folderPath . 'DatabaseSeeder.php';
-        $dbSeederText = file_get_contents($dbSeederFile);
-        $seederInitialization = '$this->call(' . $modelName . 'Seeder::class);
-            ';
-        $initializationPos = strpos($dbSeederText, '}');
-        $dbSeederOutput = substr_replace($dbSeederText, $seederInitialization, $initializationPos - 1, 0);
-        file_put_contents($dbSeederFile, $dbSeederOutput);
+        if($isNewEntity){
+            $dbSeederFile =  $folderPath . 'DatabaseSeeder.php';
+            $dbSeederText = file_get_contents($dbSeederFile);
+            $seederInitialization = '$this->call(' . $modelName . 'Seeder::class);
+                ';
+            $initializationPos = strpos($dbSeederText, '}');
+            $dbSeederOutput = substr_replace($dbSeederText, $seederInitialization, $initializationPos - 1, 0);
+            file_put_contents($dbSeederFile, $dbSeederOutput);
+        }
     }
 
     public function writeFormRequest($modelName, $tableName, $contentArray){
-        $templatePath = 'templates/FormRequestTemplate';
+        $templatePath = 'generator/templates/FormRequestTemplate';
         $template = file_get_contents($templatePath);
 
-        Artisan::call('make:request ' . $modelName . 'Request');
         $filePath = "app/Http/Requests/" . $this->capitalizeAttributes($modelName) . 'Request.php';
         $fileContent = file_get_contents($filePath);
         $tableName = str_replace("_","-", $tableName);
