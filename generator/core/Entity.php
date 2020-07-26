@@ -29,10 +29,17 @@ class Entity implements \JsonSerializable {
         ];
     }
 
-    public static function fromJSON( $jsonString )
-    {
+    public static function fromJSON( $jsonString ){
         $object = json_decode($jsonString);
         return new self($object->modelName, $object->tableName, $object->fields);
+    }
+
+    public static function fronJSONArray($jsonString){
+        $array = json_decode($jsonString);
+        $objectArray = [];
+        foreach($array as $object)
+            array_push($objectArray, new self($object->modelName, $object->tableName, $object->fields));    
+        return $objectArray;
     }
 
 }

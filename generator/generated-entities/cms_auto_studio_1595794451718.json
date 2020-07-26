@@ -1,0 +1,79 @@
+[
+    {
+        "modelName": "Category",
+        "tableName": "categories",
+        "fields": [
+            {
+                "dataType": "string",
+                "name": "name",
+                "placeholder": "Naziv",
+                "inputType": "text",
+                "isVisible": true,
+                "foreignKey": null
+            }
+        ],
+        "timestamp": 1595794287242
+    },
+    {
+        "modelName": "Movie",
+        "tableName": "movies",
+        "fields": [
+            {
+                "dataType": "string",
+                "name": "title",
+                "placeholder": "Naziv",
+                "inputType": "text",
+                "isVisible": true,
+                "foreignKey": null
+            },
+            {
+                "dataType": "text",
+                "name": "description",
+                "placeholder": "Opis",
+                "inputType": "textarea",
+                "isVisible": true,
+                "foreignKey": null
+            },
+            {
+                "dataType": "unsignedBigInteger",
+                "name": "category_id",
+                "placeholder": "Kategorija",
+                "inputType": "foreign_key",
+                "isVisible": false,
+                "foreignKey": {
+                    "modelName": "Category",
+                    "tableName": "categories",
+                    "displayField": "name"
+                }
+            }
+        ],
+        "timestamp": 1595794340934
+    },
+    {
+        "modelName": "Comment",
+        "tableName": "comments",
+        "fields": [
+            {
+                "dataType": "text",
+                "name": "text",
+                "placeholder": "tekst",
+                "inputType": "textarea",
+                "isVisible": true,
+                "foreignKey": null
+            },
+            {
+                "dataType": "unsignedBigInteger",
+                "name": "movie_id",
+                "placeholder": "Film",
+                "inputType": "foreign_key",
+                "isVisible": false,
+                "foreignKey": {
+                    "modelName": "Movie",
+                    "tableName": "movies",
+                    "displayField": "title"
+                }
+            }
+        ],
+        "timestamp": 1595794436392
+    }
+]

@@ -22,4 +22,10 @@
 22. custom css, remove template
 23. slot for menu - DONE
 24. delete images folder on entity:delete
-25. Schema maked, batch generate
+25. Schema maker, batch generate
+26. result_export?
+27. many-to-many - multiselect
+28. select fk display field 
+29. FileHandling - support other files than images
+30. custom validation
+31. entity:all validation
