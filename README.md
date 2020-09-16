@@ -1,4 +1,4 @@
-# cms-automatization overview
+# cms-automatization tool
 
 Tool to automatize CMS development. Created models, migrations, seedere, form requests controllers, routes, blade files(index, delete) which contains basic CRUD functions.
 Download the whole project, setup the enviroment and follow the instructions.
