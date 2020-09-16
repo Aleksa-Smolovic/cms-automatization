@@ -245,6 +245,7 @@ class Generator
             ';
                 break;    
             case 'file':
+                $imageHolder = '';
                 if($contentInstance->dataType == 'image'){
                     $imageHolder = '
                 <div class="row">
