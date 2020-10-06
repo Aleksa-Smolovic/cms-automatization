@@ -20,17 +20,13 @@ Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function
     Route::delete('/users/delete/{user}', 'UsersController@destroy')->name('users/delete');
     Route::put('/users/restore/{id}', 'UsersController@restore')->name('users/restore');
 
-	// Roles
-	Route::post('/roles/{role}/restore', 'RolesController@restore')->name('roles.restore');
-	Route::get('/roles/deleted', 'RolesController@deleted')->name('roles.deleted');
-	Route::resource('roles', 'RolesController');
-
 	// Admin
     Route::get('', 'AdminPanelController@index')->name('admin.index');
     
-    
+
     //->MARKER
 
+    Route::post('/summernote/image-upload', 'SummernoteUploadController@save');
 });
 
 

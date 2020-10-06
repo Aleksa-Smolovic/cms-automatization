@@ -99,10 +99,6 @@
 		$('.objectForm').attr('action', url);
 	});
 	
-	$('.table').DataTable({
-		"order": [[ 0, "desc" ]]
-	});
-	
 	function showData(returndata){
 		$('#full_name').val(returndata.full_name);
 		$('#email').val(returndata.email);
