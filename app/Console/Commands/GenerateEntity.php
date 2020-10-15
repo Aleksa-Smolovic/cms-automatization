@@ -3,8 +3,6 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Generator\TableContent;
-use Generator\ForeignKeyInstance;
 use Generator\Entity;
 use Generator\Utils;
 use Generator\CommandUtils;
@@ -44,9 +42,6 @@ class GenerateEntity extends Command
      */
     public function handle()
     {
-        //$this->arguments
-        // $entityName = $this->argument('entity'); -> when using inside command
-
         $modelName = Utils::sanitaze($this->ask('Model name'));
         if(file_exists('app/' . $modelName . '.php')){
             $this->error('Model already exists!');

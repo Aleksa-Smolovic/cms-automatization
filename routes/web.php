@@ -4,7 +4,6 @@
  * Web Site routes
  */
 Route::get('/', 'WebsiteController@index');
-// Route::get('/test', 'AutomatizationInputController@automate');
 
 /**
  * Admin Panel routes
@@ -23,7 +22,6 @@ Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function
 	// Admin
     Route::get('', 'AdminPanelController@index')->name('admin.index');
     
-
     //->MARKER
 
     Route::post('/summernote/image-upload', 'SummernoteUploadController@save');

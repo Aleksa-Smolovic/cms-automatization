@@ -4,7 +4,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="csrf-token" content="{!! csrf_token() !!}">
+	<meta name="csrf-token" content="{!! csrf_token() !!}">
 
 	@yield('css')
 
@@ -132,9 +132,6 @@
 								<a class="dropdown-item" href="#"><i class="fas fa-cog mr-2"></i>Setting</a>
 								<a class="dropdown-item" href="{{ route('logout') }}" onclick="event.preventDefault();
 										document.getElementById('logout-form').submit();"><i class="fas fa-power-off mr-2"></i>Logout</a>
-								<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-									@csrf
-								</form>
 							</div>
 						</li>
 					</ul>
@@ -157,6 +154,14 @@
 							<ul class="nav flex-column">
 
 								@include('layouts.sidebar-items')
+
+								<li class="nav-item">
+									<a class="nav-link" href="{{ route('logout') }}" onclick="event.preventDefault();
+										document.getElementById('logout-form').submit();"><i class="fas fa-power-off mr-2"></i>Logout</a>
+									<form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+										@csrf
+									</form>
+								</li>
 
 							</ul>
 
@@ -490,10 +495,11 @@
 	<script src="{{ asset('assets/vendor/datepicker/moment.js') }}"></script>
 	<script src="{{ asset('assets/vendor/datepicker/tempusdominus-bootstrap-4.js') }}"></script>
 	<script src="{{ asset('assets/vendor/datepicker/datepicker.js') }}"></script>
-	<!-- js end -->
+
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote-bs4.css" rel="stylesheet">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote-bs4.js"></script>
 	<script src="{{ asset('admin_css_js/summernote.js') }}"></script>
+	<!-- js end -->
 
 	<script>
 		$('.table').DataTable({

@@ -8,7 +8,7 @@ use Generator\ForeignKeyInstance;
 use Generator\Constants;
 use Generator\Utils;
 
-class Generator 
+class Generator
 {
     //include: Class -> TableContent, Example resource folder, Admin css/js, templates
     //Tags in web, FileHandle Trait, GeneratorController, AutomatizationInputController
@@ -17,8 +17,9 @@ class Generator
 
     private $ajaxReturnData = 'returndata';
 
-    public function insertIntoNav($modelName, $tableName){
-        $routeIndex = str_replace("_","-", $tableName);
+    public function insertIntoNav($modelName, $tableName)
+    {
+        $routeIndex = str_replace("_", "-", $tableName);
         $startNeedle = str_replace('||model||', $modelName, Constants::HTML_NEEDLE_START);
         $endNeedle = Constants::HTML_NEEDLE_END;
         $item = $startNeedle . "
@@ -34,8 +35,9 @@ class Generator
         file_put_contents(Constants::SIDEBAR_ITEMS, $sidebar);
     }
 
-    public function insertIntoWeb($tableName, $modelName){
-        $tableName = str_replace("_","-", $tableName);
+    public function insertIntoWeb($tableName, $modelName)
+    {
+        $tableName = str_replace("_", "-", $tableName);
 
         $startNeedle = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
         $endNeedle = Constants::PHP_NEEDLE_END;
@@ -49,8 +51,8 @@ class Generator
     Route::post('/" . $tableName . "/store', '" . $modelName . "Controller@store')->name('" . $tableName . "/store');
     Route::post('/" . $tableName . "/{object}/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
     "
-    . $endNeedle . 
-    "
+            . $endNeedle .
+            "
     //->MARKER";
 
         $str = file_get_contents(Constants::ROUTES_DIR);
@@ -58,10 +60,11 @@ class Generator
         file_put_contents(Constants::ROUTES_DIR, $str);
     }
 
-    public function createIndexDeletedFiles($tableName){
+    public function createIndexDeletedFiles($tableName)
+    {
         $tableName = strtolower($tableName);
         if (!file_exists('resources/views/admin/' . $tableName)) {
-            if(!mkdir('resources/views/admin/' . $tableName, 0777, true))
+            if (!mkdir('resources/views/admin/' . $tableName, 0777, true))
                 exit('Error creating view files!');
         }
 
@@ -76,14 +79,15 @@ class Generator
         fclose($deletedFile);
     }
 
-    public function writeModel($modelName, $tableName, $contentArray){
+    public function writeModel($modelName, $tableName, $contentArray)
+    {
         $templatePath = 'generator/templates/ModelTemplate';
         $template = file_get_contents($templatePath);
         $filePath = "app/" . $modelName . '.php';
 
         $dataTypeMutators = ['date', 'datetime', 'image', 'unsignedBigInteger'];
         $mutators = '';
-        foreach($contentArray as $contentInstance) if(in_array($contentInstance->dataType, $dataTypeMutators))
+        foreach ($contentArray as $contentInstance) if (in_array($contentInstance->dataType, $dataTypeMutators))
             $mutators .= $this->createMutators($contentInstance, $modelName, $tableName);
 
         $markers = ['||model||', '||table||', '||mutators||'];
@@ -92,14 +96,15 @@ class Generator
         file_put_contents($filePath, $template);
     }
 
-    public function writeController($modelName, $tableName, $contentArray){
+    public function writeController($modelName, $tableName, $contentArray)
+    {
         $templatePath = 'generator/templates/ControllerTemplate';
         $template = file_get_contents($templatePath);
         $filePath = "app/Http/Controllers/" . $modelName . 'Controller.php';
 
         $includes = $visibleFields = $relationshipObjects = $foreignKeySelect = '';
 
-        foreach($contentArray as $contentInstance) if($contentInstance->foreignKey){
+        foreach ($contentArray as $contentInstance) if ($contentInstance->foreignKey) {
             $foreignModelName = $contentInstance->foreignKey->modelName;
             $displayField = $contentInstance->foreignKey->displayField;
             $displayField = $displayField == 'id' ? "'id'" : "'id', '" . $displayField . "'";
@@ -110,25 +115,26 @@ class Generator
             $relationshipObjects .= ', "' . strtolower($foreignModelName) . '"';
         }
 
-        foreach($contentArray as $contentInstance) if($contentInstance->isVisible)
+        foreach ($contentArray as $contentInstance) if ($contentInstance->isVisible)
             $visibleFields .= ", '" . $contentInstance->name . "'";
-        
+
         $markers = ['||model||', '||table||', '||attributes||', '||foreignIncludes||', '||foreignFetch||', '||foreignObjects||'];
         $realData = [$modelName, str_replace("_", "-", $tableName), $visibleFields, $includes, $foreignKeySelect, $relationshipObjects];
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($filePath, $template);
     }
 
-    public function changeMigrations($modelName, $tableName, $contentArray){
+    public function changeMigrations($modelName, $tableName, $contentArray)
+    {
         $migrationFileName = Utils::findFile(Constants::MIGRATIONS_DIR . '*', 'create_' . $tableName . '_table.php');
 
-        if(!isset($migrationFileName) || !$migrationFileName){
+        if (!isset($migrationFileName) || !$migrationFileName) {
             echo 'File not found ' . $tableName;
             return;
         }
 
         $marker = '$table->timestamps();';
-        
+
         $str = file_get_contents($migrationFileName);
         $data = $this->createMigrationData($modelName, $contentArray);
         $str = str_replace($marker, $data['migrationData'], $str);
@@ -137,11 +143,12 @@ class Generator
         $this->changeSeeder($modelName, $data['seederData'], true);
     }
 
-    public function createMigrationData($modelName, $contentArray){
+    public function createMigrationData($modelName, $contentArray)
+    {
         $attributesOutput = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
         $seederData = [];
 
-        foreach($contentArray as $contentInstance){
+        foreach ($contentArray as $contentInstance) {
             $contentFieldName = $contentInstance->name;
             $dataTypeInfo = Constants::MIGRATION_DATATYPES[$contentInstance->dataType];
             $seederData[$contentFieldName] = '
@@ -150,7 +157,7 @@ class Generator
             $attributesOutput .= '
             $table->' . $dataType . '("' . $contentFieldName . '");
             ';
-            if($dataType == 'unsignedBigInteger') 
+            if ($dataType == 'unsignedBigInteger')
                 $attributesOutput .= '$table->foreign("' .  $contentFieldName . '")->references("id")->on("' .  $contentInstance->foreignKey->tableName . '");
                     ';
         }
@@ -169,10 +176,11 @@ class Generator
         return ['migrationData' => $attributesOutput, 'seederData' => $seederData];
     }
 
-    public function regenerateMigrations($modelName, $tableName, $contentArray){
+    public function regenerateMigrations($modelName, $tableName, $contentArray)
+    {
         $migrationFileName = Utils::findFile(Constants::MIGRATIONS_DIR . '*', 'create_' . $tableName . '_table.php');
 
-        if(!isset($migrationFileName) || !$migrationFileName){
+        if (!isset($migrationFileName) || !$migrationFileName) {
             echo 'File not found ' . $tableName;
             return;
         }
@@ -182,22 +190,24 @@ class Generator
         $needleEnd = Constants::PHP_NEEDLE_END;
         $data = $this->createMigrationData($modelName, $contentArray);
         $attributesOutput = RemovalUtils::replaceBetween($migrationFile, $needleStart, $needleEnd, $data['migrationData']);
-       
+
         file_put_contents($migrationFileName, $attributesOutput);
         $this->changeSeeder($modelName, $data['seederData'], false);
     }
 
     // TODO find replacement laravel fn?
-    public function capitalToDashString($str){
+    public function capitalToDashString($str)
+    {
         return strtolower(preg_replace('~(?=[A-Z])(?!\A)~', '_', $str));
     }
 
-    public function getHtmlInputs($contentInstance){
+    public function getHtmlInputs($contentInstance)
+    {
         $inputType = $contentInstance->inputType;
         $inputName = $contentInstance->name;
         $inputPlaceholder = $contentInstance->placeholder;
         // TODO switch to constants
-        switch($inputType){
+        switch ($inputType) {
             case 'textarea':
                 return '
                     <div class="row">
@@ -209,6 +219,18 @@ class Generator
                         </div>
                     </div>
                     ';
+                break;
+            case 'rich_textarea':
+                return '
+                        <div class="row">
+                            <div class="col-12"> 
+                                <div class="form-group">
+                                    <label class="col-form-label" for="' . $inputName . '">' . $inputPlaceholder . ' *</label>
+                                    <textarea class="form-control rich-textarea" id="' . $inputName . '" name="' . $inputName . '" placeholder="' . $inputPlaceholder . '"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        ';
                 break;
             case 'date':
                 return '
@@ -226,7 +248,7 @@ class Generator
                     </div>
                 </div>    
                 ';
-                break;    
+                break;
             case 'datetime':
                 return '
                 <div class="row">
@@ -243,10 +265,10 @@ class Generator
                     </div>
                 </div> 
             ';
-                break;    
+                break;
             case 'file':
                 $imageHolder = '';
-                if($contentInstance->dataType == 'image'){
+                if ($contentInstance->dataType == 'image') {
                     $imageHolder = '
                 <div class="row">
                     <div class="col-12">
@@ -298,16 +320,20 @@ class Generator
                 ';
                 break;
         }
-
     }
 
     // TODO change to use custom objects instead of stdClass, ie. TableContent $tableContent
-    public function getTableContent($tableContent){
-        switch($tableContent->dataType){
+    public function getTableContent($tableContent)
+    {
+        switch ($tableContent->dataType) {
             case 'image':
                 return '<td class="text-center">
                             <img class="rounded" src="{{ $object->' . $tableContent->name . '}}" width="60">
                         </td>';
+                break;
+            case 'text':
+                return '<td class="text-center">{{ Str::limit(strip_tags($object->' . $tableContent->name . '), 150, "...") }}</td>
+                ';
                 break;
             default:
                 return '<td class="text-center">{{ $object->' . $tableContent->name . ' }}</td>
@@ -316,7 +342,8 @@ class Generator
         }
     }
 
-    public function writeIndexBlade($tableName, $contentArray){
+    public function writeIndexBlade($tableName, $contentArray)
+    {
         $filePath = "resources/views/admin/" . $tableName . "/index.blade.php";
         $indexContent = file_get_contents($filePath);
 
@@ -324,26 +351,33 @@ class Generator
 
         $editBtnData .=  $tableName . '/{{$object->id}}';
 
-        foreach($contentArray as $column){
-            if ($column->isVisible){
+        foreach ($contentArray as $column) {
+            if ($column->isVisible) {
                 $tableHeaders .= '<th class="text-center">' . $column->placeholder . '</th>
                 ';
                 $tableContent .= $this->getTableContent($column);
             }
-            if($column->inputType == 'file' && $column->dataType == 'image'){
-                $modalOpenValue .= 	"$('#" . $column->name . "Holder').attr({ 'src': " . $this->ajaxReturnData .".". $column->name . " });
+            if ($column->inputType == 'file' && $column->dataType == 'image') {
+                $modalOpenValue .=     "$('#" . $column->name . "Holder').attr({ 'src': " . $this->ajaxReturnData . "." . $column->name . " });
                 ";
                 $modalCloseValue = 'var $image = $("#' . $column->name . 'Holder");
             $("#' . $column->name . 'Holder").removeAttr("src").replaceWith($image.clone());';
-            }else{
-                $modalOpenValue .= 	"$('#" . $column->name . "').val(" . $this->ajaxReturnData .".". $column->name . " );
+            } else if ($column->inputType == 'rich_textarea') {
+                $modalOpenValue .=     "$('#" . $column->name . "').summernote('code', " . $this->ajaxReturnData . "." . $column->name . ");
+                ";
+                $modalCloseValue .=     "$('#" . $column->name . "').summernote('code', '');
+                ";
+            } else {
+                $modalOpenValue .=     "$('#" . $column->name . "').val(" . $this->ajaxReturnData . "." . $column->name . " );
                 ";
             }
             $htmlInputs .= $this->getHtmlInputs($column);
         }
 
-        $markers = ['<!-- Marker Table Heading -->', '<!-- Marker Table Content -->', 'data-route-marker',
-        'tableNameMarker', '//OpenModalMarker', '//CloseModalMarker', '<!-- InputsMarker -->'];
+        $markers = [
+            '<!-- Marker Table Heading -->', '<!-- Marker Table Content -->', 'data-route-marker',
+            'tableNameMarker', '//OpenModalMarker', '//CloseModalMarker', '<!-- InputsMarker -->'
+        ];
         $realData = [$tableHeaders, $tableContent, $editBtnData, $tableName, $modalOpenValue, $modalCloseValue, $htmlInputs];
         $indexContent = str_replace($markers, $realData, $indexContent);
         file_put_contents($filePath, $indexContent);
@@ -356,23 +390,28 @@ class Generator
         file_put_contents($filePath, $deletedContent);
     }
 
-    public function declareValidation($tableContentInsance){
+    public function declareValidation($tableContentInsance)
+    {
         //TODO switch to constants
-        switch($tableContentInsance->inputType){
+        switch ($tableContentInsance->inputType) {
             case 'textarea':
                 return "
             '$tableContentInsance->name' => 'required|max:10000',";
                 break;
+            case 'rich_textarea':
+                return "
+                '$tableContentInsance->name' => ['required', new RichTextLength(10000)],";
+                break;
             case 'date':
                 return "
             '$tableContentInsance->name' => 'required|date_format:d/m/Y',";
-                break;  
+                break;
             case 'datetime':
                 return "
             '$tableContentInsance->name' => 'required|date_format:d/m/Y H:i:s',";
-                break;    
+                break;
             case 'file':
-                if($tableContentInsance->dataType == 'image'){
+                if ($tableContentInsance->dataType == 'image') {
                     return "
             '$tableContentInsance->name' => 'required|max:5000|mimes:jpeg,png,jpg,gif,svg',";
                 }
@@ -385,20 +424,24 @@ class Generator
                 break;
             default:
                 return "
-            '$tableContentInsance->name' => 'required|max:191',";
+            '$tableContentInsance->name' => 'required|max:255',";
                 break;
         }
-
     }
 
-    public function validationAlerts($contentInstance){
+    public function validationAlerts($contentInstance)
+    {
         $inputName = $contentInstance->name;
         $inputPlaceholder = $contentInstance->placeholder;
-        switch($contentInstance->inputType){
+        switch ($contentInstance->inputType) {
             case 'textarea':
                 return "
             '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
             '$inputName.max' => '$inputPlaceholder može sadržati maksimum 10000 karakera!',";
+                break;
+            case 'rich_textarea':
+                return "
+                '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',";
                 break;
             case 'date':
                 return "
@@ -409,9 +452,9 @@ class Generator
                 return "
             '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
             '$inputName.date_format' => '$inputPlaceholder mora biti dormata d/m/y h:i:s!',";
-                break;    
+                break;
             case 'file':
-                if($contentInstance->dataType == 'image'){
+                if ($contentInstance->dataType == 'image') {
                     return "
             '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
             '$inputName.max' => 'Maksimalna veličina " . strtolower($inputPlaceholder) . " je 5mb!',
@@ -425,19 +468,19 @@ class Generator
             case 'foreign_key':
                 return "
             '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',";
-                break;    
+                break;
             default:
                 return "
             '$inputName.required'=> 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.max'=> '$inputPlaceholder može sadržati najviše 191 karaktera!',";
+            '$inputName.max'=> '$inputPlaceholder može sadržati najviše 255 karaktera!',";
                 break;
         }
-
     }
 
-    public function createMutators($tableContentInsance, $modelName, $tableName){
+    public function createMutators($tableContentInsance, $modelName, $tableName)
+    {
         $fieldName = $tableContentInsance->name;
-        switch($tableContentInsance->dataType){
+        switch ($tableContentInsance->dataType) {
             case 'date':
                 return '
             public function get' . $this->capitalizeAttributes($fieldName) . 'Attribute($value){
@@ -461,7 +504,7 @@ class Generator
             }';
                 break;
             case 'image':
-                    return '
+                return '
             public function get' . $this->capitalizeAttributes($fieldName) . 'Attribute($value){
                 return strpos($value, "http") === false ? asset($value) : $value;
             } 
@@ -473,7 +516,7 @@ class Generator
             }';
                 break;
             case 'unsignedBigInteger':
-                    return '
+                return '
             public function ' . strtolower($tableContentInsance->foreignKey->modelName) . '(){
                 return $this->belongsTo(' . $tableContentInsance->foreignKey->modelName . '::class);
             }';
@@ -481,14 +524,16 @@ class Generator
         }
     }
 
-    public function capitalizeAttributes($str) {
+    public function capitalizeAttributes($str)
+    {
         $frags = explode('_', $str);
-        for ($i = 0; $i < count($frags); $i++) 
-          $frags[$i] = strtoupper(substr($frags[$i], 0, 1)) . substr($frags[$i], 1);;
+        for ($i = 0; $i < count($frags); $i++)
+            $frags[$i] = strtoupper(substr($frags[$i], 0, 1)) . substr($frags[$i], 1);;
         return join('', $frags);
     }
 
-    public function generate($entity){
+    public function generate($entity)
+    {
         $tableName = strtolower($entity->tableName);
         $modelName = $entity->modelName;
         $contentArray = $entity->fields;
@@ -499,26 +544,27 @@ class Generator
         Artisan::call('make:request ' . $modelName . 'Request');
 
         $this->writeModel($modelName, $tableName, $contentArray);
-        $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
+        $this->createIndexDeletedFiles(str_replace("_", "-", $tableName));
 
         $this->insertIntoNav($modelName, $tableName);
         $this->insertIntoWeb($tableName, $modelName);
         $this->writeController($modelName, $tableName, $contentArray);
 
         $this->changeMigrations($modelName, $tableName, $contentArray);
-        $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
+        $this->writeIndexBlade(str_replace("_", "-", $tableName), $contentArray);
         $this->writeFormRequest($modelName, $tableName, $contentArray);
 
         Utils::writeToJson($entity);
     }
 
-    public function regenerate($entity){
+    public function regenerate($entity)
+    {
         $tableName = strtolower($entity->tableName);
         $modelName = $entity->modelName;
         $contentArray = $entity->fields;
 
-        $this->createIndexDeletedFiles(str_replace("_","-", $tableName));
-        $this->writeIndexBlade(str_replace("_","-", $tableName), $contentArray);
+        $this->createIndexDeletedFiles(str_replace("_", "-", $tableName));
+        $this->writeIndexBlade(str_replace("_", "-", $tableName), $contentArray);
         $this->writeController($modelName, $tableName, $contentArray);
         $this->writeFormRequest($modelName, $tableName, $contentArray);
 
@@ -527,14 +573,15 @@ class Generator
         Utils::writeToJson($entity);
     }
 
-    public function changeSeeder($modelName, $seederData, $isNewEntity){
+    public function changeSeeder($modelName, $seederData, $isNewEntity)
+    {
         $templatePath = 'generator/templates/SeederTemplate';
         $template = file_get_contents($templatePath);
 
         $folderPath = 'database/seeds/';
         $seederFileName =  $folderPath . $modelName . 'Seeder.php';
         $str = file_get_contents($seederFileName);
-        if($str === false || empty($str)) 
+        if ($str === false || empty($str))
             exit($seederFileName);
         $seedOutput = '';
         foreach ($seederData as $key => $value) {
@@ -547,7 +594,7 @@ class Generator
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($seederFileName, $template);
 
-        if($isNewEntity){
+        if ($isNewEntity) {
             $dbSeederFile =  $folderPath . 'DatabaseSeeder.php';
             $dbSeederText = file_get_contents($dbSeederFile);
             $seederInitialization = '$this->call(' . $modelName . 'Seeder::class);
@@ -558,17 +605,18 @@ class Generator
         }
     }
 
-    public function writeFormRequest($modelName, $tableName, $contentArray){
+    public function writeFormRequest($modelName, $tableName, $contentArray)
+    {
         $templatePath = 'generator/templates/FormRequestTemplate';
         $template = file_get_contents($templatePath);
 
         $filePath = "app/Http/Requests/" . $this->capitalizeAttributes($modelName) . 'Request.php';
         $fileContent = file_get_contents($filePath);
-        $tableName = str_replace("_","-", $tableName);
+        $tableName = str_replace("_", "-", $tableName);
 
         $rules = $messages = $additionalHandling = $additionalActionsMerge = '';
 
-        foreach($contentArray as $contentInstance){
+        foreach ($contentArray as $contentInstance) {
             $rules .= $this->declareValidation($contentInstance);
             $messages .= $this->validationAlerts($contentInstance);
         }
@@ -578,5 +626,4 @@ class Generator
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($filePath, $template);
     }
-
 }

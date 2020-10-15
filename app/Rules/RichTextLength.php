@@ -14,7 +14,7 @@ class RichTextLength implements Rule
      *
      * @return void
      */
-    public function __construct()
+    public function __construct($length)
     {
         $this->length = $length;
     }
@@ -28,7 +28,7 @@ class RichTextLength implements Rule
      */
     public function passes($attribute, $value)
     {
-        return strlen(strip_tags($value)) < $this->length;
+        return strlen(strip_tags($value)) <= $this->length;
     }
 
     /**
@@ -38,7 +38,7 @@ class RichTextLength implements Rule
      */
     public function message()
     {
-        // return 'Field :attribute cannot have more than ' . $this->length . ' characters!';
-        return trans('validation.rich-text', ['length' => $this->length]);
+        return 'Field :attribute cannot have more than ' . $this->length . ' characters!';
+        // return trans('validation.rich-text', ['length' => $this->length]);
     }
 }

@@ -85,10 +85,6 @@
 		$('.objectForm').attr('action', url);
 	});
 
-	$('.table').DataTable({
-		"order": [[ 0, "desc" ]]
-	});
-
 	function showData(returndata){
 		//OpenModalMarker
 		$('#myModal').modal('show'); 

@@ -5,7 +5,7 @@ namespace Generator;
 class Constants{
 
     const DATA_TYPES = ['string', 'text', 'integer', 'double', 'date', 'datetime', 'image', 'boolean'];
-    CONST INPUT_TYPES = ['text', 'date', 'datetime', 'file', 'number', 'textarea', 'email', 'password'];
+    CONST INPUT_TYPES = ['text', 'date', 'datetime', 'file', 'number', 'textarea', 'rich_textarea', 'email', 'password'];
 
     const MIGRATION_DATATYPES = [
         'image' => ['dataType' => 'text', 'seederDataType'=> 'imageUrl($width = 640, $height = 480),'],
