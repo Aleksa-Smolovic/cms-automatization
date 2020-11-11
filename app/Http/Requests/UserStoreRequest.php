@@ -27,20 +27,6 @@ class UserStoreRequest extends FormRequest
         return $this->is('admin/users/store') ? $this->createRules() : $this->updateRules();
     }
 
-    public function messages()
-    {
-        return [
-            'role_id.required' => 'Morate odabrati korisničku ulogu!',
-            'full_name.required' => 'Morate unijeti ime i prezime!',
-            'email.required' => 'Morate unijeti email!',
-            'email.email' => 'Morate unijeti validan email!',
-            'email.unique' => 'Korisnik sa datim email-om već postoji!',
-            'password.required' => 'Morate unijeti password!',
-            'password.min' => 'Password mora sadržati minimum 6 karaktera!',
-            'password.confirmed' => 'Morate potvrditi password!'
-        ];
-    }
-
     public function createRules(){
         return [
             'role_id'    => 'required',

@@ -7,6 +7,9 @@ use Generator\TableContent;
 use Generator\ForeignKeyInstance;
 use Generator\Constants;
 use Generator\Utils;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Lang;
 
 class Generator
 {
@@ -41,6 +44,7 @@ class Generator
 
         $startNeedle = str_replace('||model||', $modelName, Constants::PHP_NEEDLE_START);
         $endNeedle = Constants::PHP_NEEDLE_END;
+        $generalNeedle = Constants::PHP_GENERAL_NEEDLE;
 
         $item = $startNeedle . "
     Route::get('/" . $tableName . "', '" . $modelName . "Controller@index')->name('admin/" . $tableName . "');
@@ -51,12 +55,13 @@ class Generator
     Route::post('/" . $tableName . "/store', '" . $modelName . "Controller@store')->name('" . $tableName . "/store');
     Route::post('/" . $tableName . "/{object}/edit', '" . $modelName . "Controller@edit')->name('" . $tableName . "/edit');
     "
-            . $endNeedle .
-            "
-    //->MARKER";
+            . $endNeedle . "
+            
+            " .
+            $generalNeedle;
 
         $str = file_get_contents(Constants::ROUTES_DIR);
-        $str = str_replace("//->MARKER", $item, $str);
+        $str = str_replace($generalNeedle, $item, $str);
         file_put_contents(Constants::ROUTES_DIR, $str);
     }
 
@@ -429,54 +434,6 @@ class Generator
         }
     }
 
-    public function validationAlerts($contentInstance)
-    {
-        $inputName = $contentInstance->name;
-        $inputPlaceholder = $contentInstance->placeholder;
-        switch ($contentInstance->inputType) {
-            case 'textarea':
-                return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.max' => '$inputPlaceholder može sadržati maksimum 10000 karakera!',";
-                break;
-            case 'rich_textarea':
-                return "
-                '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',";
-                break;
-            case 'date':
-                return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.date_format' => '$inputPlaceholder mora biti dormata d/m/y!',";
-                break;
-            case 'datetime':
-                return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.date_format' => '$inputPlaceholder mora biti dormata d/m/y h:i:s!',";
-                break;
-            case 'file':
-                if ($contentInstance->dataType == 'image') {
-                    return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.max' => 'Maksimalna veličina " . strtolower($inputPlaceholder) . " je 5mb!',
-            '$inputName.mimes' => '$inputPlaceholder može biti formata: jpeg,png,jpg,gif,svg!',";
-                }
-                return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.max' => 'Maksimalna veličina " . strtolower($inputPlaceholder) . " je 5mb!',
-            '$inputName.mimes' => '$inputPlaceholder može biti formata: pdf,docx!',";
-                break;
-            case 'foreign_key':
-                return "
-            '$inputName.required' => 'Morate unijeti " . strtolower($inputPlaceholder) . "!',";
-                break;
-            default:
-                return "
-            '$inputName.required'=> 'Morate unijeti " . strtolower($inputPlaceholder) . "!',
-            '$inputName.max'=> '$inputPlaceholder može sadržati najviše 255 karaktera!',";
-                break;
-        }
-    }
-
     public function createMutators($tableContentInsance, $modelName, $tableName)
     {
         $fieldName = $tableContentInsance->name;
@@ -614,16 +571,37 @@ class Generator
         $fileContent = file_get_contents($filePath);
         $tableName = str_replace("_", "-", $tableName);
 
-        $rules = $messages = $additionalHandling = $additionalActionsMerge = '';
+        $rules = '';
+        $validationTranslation = Lang::get('validation');
 
         foreach ($contentArray as $contentInstance) {
             $rules .= $this->declareValidation($contentInstance);
-            $messages .= $this->validationAlerts($contentInstance);
+            $validationTranslation['attributes'] =
+                Arr::add($validationTranslation['attributes'], $contentInstance->name, strtolower($contentInstance->placeholder));
         }
 
-        $markers = ['||model||', '||table||', '||messages||', '||createRules||', '||updateRules||'];
-        $realData = [$modelName, $tableName, $messages, $rules, $rules];
+        $markers = ['||model||', '||table||', '||createRules||', '||updateRules||'];
+        $realData = [$modelName, $tableName, $rules, $rules];
         $template =  str_replace($markers, $realData, $template);
         file_put_contents($filePath, $template);
+
+        $validationOutput = $this->varexport($validationTranslation, true);
+        $path = \App::langPath() . '/me/validation.php';
+
+        $output = "<?php\n\nreturn " . $validationOutput . ";\n";
+        $langFile = new Filesystem();
+        $langFile->put($path, $output);
+    }
+
+    function varexport($expression)
+    {
+        $export = var_export($expression, TRUE);
+        $patterns = [
+            "/array \(/" => '[',
+            "/^([ ]*)\)(,?)$/m" => '$1]$2',
+            "/=>[ ]?\n[ ]+\[/" => '=> [',
+            "/([ ]*)(\'[^\']+\') => ([\[\'])/" => '$1$2 => $3',
+        ];
+        return preg_replace(array_keys($patterns), array_values($patterns), $export);
     }
 }

@@ -38,6 +38,7 @@ class Constants{
     const HTML_NEEDLE_END = '<!-- </needle> -->';
     const PHP_NEEDLE_START = '//<!-- <needle for="||model||"> -->';
     const PHP_NEEDLE_END = '//<!-- </needle> -->';
+    const PHP_GENERAL_NEEDLE = '// </needle>';
 
     const SEEDER_INSTANCE = '$this->call(||model||Seeder::class);';
 }

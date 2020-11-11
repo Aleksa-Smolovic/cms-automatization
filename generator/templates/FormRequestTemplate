@@ -27,13 +27,6 @@ class ||model||Request extends FormRequest
         return $this->is('admin/||table||/store') ? $this->createRules() : $this->updateRules();
     }
 
-    public function messages()
-    {
-        return [
-            ||messages||
-        ];
-    }
-
     public function createRules(){
         return [
             ||createRules||

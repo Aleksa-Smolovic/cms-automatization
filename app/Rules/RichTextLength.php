@@ -38,7 +38,6 @@ class RichTextLength implements Rule
      */
     public function message()
     {
-        return 'Field :attribute cannot have more than ' . $this->length . ' characters!';
-        // return trans('validation.rich-text', ['length' => $this->length]);
+        return trans('validation.rich-text', ['length' => $this->length]);
     }
 }

@@ -10,7 +10,7 @@ Route::get('/', 'WebsiteController@index');
  */
 Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function () {
 
-	// Users
+    // Users
     Route::get('/users/deleted', 'UsersController@deleted')->name('users.deleted');
     Route::get('/users', 'UsersController@index')->name('users');
     Route::get('/users/{id}', 'UsersController@getOne')->name('users/fetch');
@@ -19,14 +19,13 @@ Route::group(['middleware' => ['auth', 'admin'], 'prefix' => 'admin/'], function
     Route::delete('/users/delete/{user}', 'UsersController@destroy')->name('users/delete');
     Route::put('/users/restore/{id}', 'UsersController@restore')->name('users/restore');
 
-	// Admin
+    // Admin
     Route::get('', 'AdminPanelController@index')->name('admin.index');
-    
-    //->MARKER
+
+    // </needle>
 
     Route::post('/summernote/image-upload', 'SummernoteUploadController@save');
 });
-
 
 /**
  * Auth routes

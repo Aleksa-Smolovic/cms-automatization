@@ -30,3 +30,4 @@
 30. custom validation
 31. entity:all validation
 32. trans instead of request messages
+33. laravel 8
